@@ -1,0 +1,22 @@
+{
+  "name": "@aery/parsnip",
+  "version": "1.0.0",
+  "description": "Command parser",
+  "main": "index.js",
+  "scripts": {
+    "compile": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aery-chan/node-parsnip.git"
+  },
+  "author": "Aery",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aery-chan/node-parsnip/issues"
+  },
+  "homepage": "https://github.com/aery-chan/node-parsnip#readme",
+  "devDependencies": {
+    "typescript": "^3.3.3"
+  }
+}
