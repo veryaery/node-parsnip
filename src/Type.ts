@@ -1,3 +1,5 @@
+import { Options } from "./index";
+
 export type TypeParseReturnObject = {
     output: any,
     remaining: string
@@ -5,6 +7,6 @@ export type TypeParseReturnObject = {
 
 export abstract class Type {
 
-    abstract parse(input: string, options: object): TypeParseReturnObject | Promise<TypeParseReturnObject>;
+    abstract parse(input: string, options: Options | object): TypeParseReturnObject | Promise<TypeParseReturnObject>;
 
 }
