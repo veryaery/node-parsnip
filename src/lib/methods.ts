@@ -54,3 +54,13 @@ export function match_object(input: string, object: object): Option | null {
 
     return null;
 }
+
+export function default_properties(object: object, default_object: object): object {
+    for (const key in default_object) {
+        if (!object.hasOwnProperty(key)) {
+            object[key] = default_object[key];
+        }
+    }
+
+    return object;
+}
