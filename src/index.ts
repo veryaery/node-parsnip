@@ -1,5 +1,5 @@
 export type Options = {
-    separator: string
+    separator?: string
 }
 
 const default_options: Options = {

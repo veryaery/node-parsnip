@@ -1,4 +1,4 @@
-import { Options } from "./index";
+import { DefaultedOptions } from "./interfaces/DefaultedOptions";
 
 export type TypeParseReturnObject = {
     output: any,
@@ -7,6 +7,6 @@ export type TypeParseReturnObject = {
 
 export abstract class Type {
 
-    abstract parse(input: string, options: Options | object): TypeParseReturnObject | Promise<TypeParseReturnObject>;
+    abstract parse(input: string, options: DefaultedOptions): TypeParseReturnObject | Promise<TypeParseReturnObject>;
 
 }
