@@ -27,8 +27,8 @@ export function before(input: string, separator: string): string {
     return before;
 }
 
-export function match_array(input: string, array: Option[]): Option | null {
-    for (const option of array) {
+export function match_array(input: string, matches: Option[]): Option | null {
+    for (const option of matches) {
         if (option.name == input) {
             return option;
         }
@@ -37,9 +37,9 @@ export function match_array(input: string, array: Option[]): Option | null {
     return null;
 }
 
-export function match_object(input: string, object: object): Option | null {
-    for (const prefix in object) {
-        const options: Option[] = object[prefix];
+export function match_object(input: string, matches: object): Option | null {
+    for (const prefix in matches) {
+        const options: Option[] = matches[prefix];
 
         if (input.startsWith(prefix)) {
             const trimmed_input: string = input.slice(prefix.length, input.length);
