@@ -4,20 +4,20 @@ import { DefaultedOptions } from "../interfaces/DefaultedOptions";
 import * as methods from "../lib/methods";
 
 export type StrOptions = {
-    quotation_marks?: string[],
-    escape?: string[]
+    quotation?: string | string[],
+    escape?: string | string[]
 }
 
 interface DefaultedStrOptions {
-    quotation_marks: string[],
-    escape: string[]
+    quotation: string | string[],
+    escape: string | string[]
 }
 
 export class Str extends Type {
     
     static default_options: StrOptions = {
-        quotation_marks: [ "\"", "'" ],
-        escape: [ "\\" ]
+        quotation: [ "\"", "'" ],
+        escape: "\\"
     }
 
     options: DefaultedStrOptions
@@ -31,13 +31,13 @@ export class Str extends Type {
     parse(input: string, options: DefaultedOptions): TypeReturnObject {
         let output: string = "";
         let escape: boolean = false;
-        let quote: string | null = null;
+        let quote: string = null;
 
         while (input.length > 0) {
             if (escape) {
-                const starts_with: string | null =
-                    this.starts_with_of_array(input, this.options.escape) ||
-                    this.starts_with_of_array(input, this.options.quotation_marks);
+                const starts_with: string =
+                    methods.starts_with(input, this.options.escape) ||
+                    methods.starts_with(input, this.options.quotation);
     
                 if (starts_with) {
                     output += starts_with;
@@ -51,16 +51,18 @@ export class Str extends Type {
                 continue;
             }
 
-            if (input.startsWith(options.separator)) {
+            const starts_with_separator: string = methods.starts_with(input, options.separator);
+
+            if (starts_with_separator) {
                 if (quote) {
-                    output += options.separator;
-                    input = input.slice(options.separator.length, input.length);
+                    output += starts_with_separator;
+                    input = input.slice(starts_with_separator.length, input.length);
                 } else {
                     break;
                 }
             }
 
-            const starts_with_escape: string | null = this.starts_with_of_array(input, this.options.escape);
+            const starts_with_escape: string = methods.starts_with(input, this.options.escape);
 
             if (starts_with_escape) {
                 escape = true;
@@ -73,17 +75,19 @@ export class Str extends Type {
                 continue;
             }
 
-            const starts_with_quote: string | null = this.starts_with_of_array(input, this.options.quotation_marks);
+            const starts_with_quote: string = methods.starts_with(input, this.options.quotation);
 
             if (starts_with_quote) {
                 input = input.slice(starts_with_quote.length, input.length);
                 
                 if (quote) {
                     if (quote == starts_with_quote) {
-                        if (input.startsWith(options.separator)) {
+                        const starts_with_separator: string = methods.starts_with(input, options.separator);
+
+                        if (starts_with_separator || input.length == 0) {
                             break;
                         } else {
-                            // TODO: Throw an error. Expected separator
+                            // TODO: Throw an error. Expected separator at end of string
                         }
                     } else {
                         output += starts_with_quote;
@@ -103,16 +107,6 @@ export class Str extends Type {
             output,
             remaining: input
         };
-    }
-
-    private starts_with_of_array(input: string, matches: string[]): string | null {
-        for (const match of matches) {
-            if (input.startsWith(match)) {
-                return match;
-            }
-        }
-
-        return null;
     }
 
 }

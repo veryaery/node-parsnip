@@ -1,3 +1,3 @@
 export interface DefaultedOptions {
-    separator: string
+    separator: string | string[]
 }

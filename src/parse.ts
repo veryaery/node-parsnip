@@ -18,13 +18,13 @@ async function parse_option(visitor: Visitor, options: DefaultedOptions): Promis
     while (visitor.remaining.length > 0) {
         const before = methods.before(visitor.remaining, options.separator);
 
-        let match: Option | null;
+        let match: Option;
 
         // Match input before next separator with an option
         if (typeof visitor.command.options == "object") {
-            match = <Option | null>methods.match_object(before, visitor.command.options);
+            match = methods.match_object(before, visitor.command.options);
         } else {
-            match = <Option | null>methods.match_array(before, visitor.command.options);
+            match = methods.match_array(before, visitor.command.options);
         }
 
         if (match) {
@@ -54,13 +54,13 @@ async function parse_option(visitor: Visitor, options: DefaultedOptions): Promis
 async function parse_command(visitor: Visitor, options: DefaultedOptions): Promise<void> {
     const before = methods.before(visitor.remaining, options.separator);
 
-    let match: Command | null;
+    let match: Command;
 
     // Match input before next separator with a command 
     if (typeof visitor.command.commands == "object") {
-        match = <Command | null>methods.match_object(before, visitor.command.commands);
+        match = <Command>methods.match_object(before, visitor.command.commands);
     } else {
-        match = <Command | null>methods.match_array(before, visitor.command.commands);
+        match = <Command>methods.match_array(before, visitor.command.commands);
     }
 
     if (match) {

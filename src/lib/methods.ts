@@ -1,9 +1,27 @@
 import { Option } from "../interfaces/Option";
 
-export function trim_start(input: string, separator: string): string {
+export function starts_with(input: string, matches: string | string[]): string {
+    if (typeof matches == "string") {
+        if (input.startsWith(matches)) {
+            return matches;
+        }
+    } else {
+        for (const match of matches) {
+            if (input.startsWith(match)) {
+                return match;
+            }
+        }
+    }
+
+    return null;
+}
+
+export function trim_start(input: string, separator: string | string[]): string {
     while (input.length > 0) {
-        if (input.startsWith(separator)) {
-            input = input.slice(separator.length, input.length);
+        const starts_with_separator: string = starts_with(input, separator);
+
+        if (starts_with_separator) {
+            input = input.slice(starts_with_separator.length, input.length);
         } else {
             break;
         }
@@ -12,11 +30,13 @@ export function trim_start(input: string, separator: string): string {
     return input;
 }
 
-export function before(input: string, separator: string): string {
+export function before(input: string, separator: string | string[]): string {
     let before: string = "";
 
     while (input.length > 0) {
-        if (input.startsWith(separator)) {
+        const starts_with_separator: string = starts_with(input, separator);
+
+        if (starts_with_separator) {
             break;
         } else {
             before += input.slice(0, 1);
@@ -27,7 +47,7 @@ export function before(input: string, separator: string): string {
     return before;
 }
 
-export function match_array(input: string, matches: Option[]): Option | null {
+export function match_array(input: string, matches: Option[]): Option {
     for (const option of matches) {
         if (option.name == input) {
             return option;
@@ -37,7 +57,7 @@ export function match_array(input: string, matches: Option[]): Option | null {
     return null;
 }
 
-export function match_object(input: string, matches: object): Option | null {
+export function match_object(input: string, matches: object): Option {
     for (const prefix in matches) {
         const options: Option[] = matches[prefix];
 
