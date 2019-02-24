@@ -2,15 +2,35 @@ import { Visitor } from "./interfaces/Visitor";
 import { DefaultedOptions } from "./interfaces/DefaultedOptions";
 import { Option } from "./interfaces/Option";
 import { Command } from "./interfaces/Command";
+import { Argument } from "./interfaces/Argument";
+import { TypeReturnObject } from "./Type";
 
 import * as methods from "./lib/methods";
-import { Argument } from "./interfaces/Argument";
 
 function argument_i(visitor): number {
     if (visitor.target == visitor.command) {
         return visitor.arguments.command.length;
     } else {
         return visitor.arguments.options[visitor.target.name].length;
+    }
+}
+
+async function parse_argument(visitor: Visitor, options: DefaultedOptions): Promise<void> {
+    const i: number = argument_i(visitor);
+    const next: Argument = visitor.target.arguments[i];
+
+    let result: TypeReturnObject | Promise<TypeReturnObject> = next.type.parse(visitor.remaining, options);
+
+    if (result instanceof Promise) {
+        result = await result;
+    }
+
+    visitor.remaining = result.remaining;
+
+    if (visitor.target == visitor.command) {
+        visitor.arguments.command[i] = result.output;
+    } else {
+        visitor.arguments.options[visitor.target.name][i] = result.output;
     }
 }
 
@@ -28,24 +48,26 @@ async function parse_option(visitor: Visitor, options: DefaultedOptions): Promis
         }
 
         if (match) {
+            const was_command: boolean = visitor.target == visitor.command;
+
             // If there was a match, parse that option instead
             visitor.remaining = methods.trim_start(visitor.remaining.slice(before.length, visitor.remaining.length), options.separator);
             visitor.target = match;
             await parse_option(visitor, options);
 
-            if (visitor.target != visitor.command) {
-                // We should only try to resume argument parsing after matching another option if the target is the command
+            // If the last target was the command
+            if (was_command) {
+                // Try to resume command argument parsing after parsing matched option
+                visitor.target = visitor.command;
+            } else {
+                // Cancel option argument parsing
                 break;
             }
         } else {
             // TODO: Check if both the target and command's parsing is done. If it is, throw an error. Too much input
         }
 
-        // Parse target's arguments
-        const i: number = argument_i(visitor);
-        const next: Argument = visitor.target.arguments[i];
-
-
+        await parse_argument(visitor, options);
     }
 
     // TODO: make sure all required arguments were parsed
@@ -69,5 +91,7 @@ async function parse_command(visitor: Visitor, options: DefaultedOptions): Promi
         visitor.command = match;
         visitor.target = match;
         await parse_command(visitor, options);
+    } else {
+        await parse_option(visitor, options);
     }
 }
