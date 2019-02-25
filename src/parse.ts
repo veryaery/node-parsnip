@@ -7,7 +7,7 @@ import { TypeReturnObject } from "./Type";
 
 import * as methods from "./lib/methods";
 
-function argument_i(visitor): number {
+function next_argument_i(visitor: Visitor): number {
     if (visitor.target == visitor.command) {
         return visitor.arguments.command.length;
     } else {
@@ -16,7 +16,7 @@ function argument_i(visitor): number {
 }
 
 async function parse_argument(visitor: Visitor, options: DefaultedOptions): Promise<void> {
-    const i: number = argument_i(visitor);
+    const i: number = next_argument_i(visitor);
     const next: Argument = visitor.target.arguments[i];
 
     let result: TypeReturnObject | Promise<TypeReturnObject> = next.type.parse(visitor.remaining, options);
