@@ -64,13 +64,22 @@ async function parse_option(visitor: Visitor, options: DefaultedOptions): Promis
                 break;
             }
         } else {
-            // TODO: Check if both the target and command's parsing is done. If it is, throw an error. Too much input
-        }
+            // TODO: Check if both the target's and command's argument parsing is done. If it is, throw an error. Too much input
 
-        await parse_argument(visitor, options);
+            await parse_argument(visitor, options);
+        }
     }
 
-    // TODO: make sure all required arguments were parsed
+    // Make sure all required arguments were parsed
+    const i: number = next_argument_i(visitor);
+
+    if (i < visitor.target.arguments.length) {
+        const next: Argument = visitor.target.arguments[i];
+
+        if (!next.optional) {
+            // TODO: Throw error. Argument required
+        }
+    }
 }
 
 async function parse_command(visitor: Visitor, options: DefaultedOptions): Promise<void> {
