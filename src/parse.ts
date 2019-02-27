@@ -65,6 +65,18 @@ async function parse_option(visitor: Visitor, options: DefaultedOptions): Promis
             }
         } else {
             // TODO: Check if both the target's and command's argument parsing is done. If it is, throw an error. Too much input
+            if (visitor.target == visitor.command) {
+                if (visitor.arguments.command.length == visitor.command.arguments.length) {
+                    // TODO: Throw error. Too much input
+                }
+            } else {
+                if (
+                    visitor.arguments.options[visitor.target.name].length == visitor.target.arguments.length &&
+                    visitor.arguments.command.length == visitor.command.arguments.length
+                ) {
+                    // TODO: Throw error. Too much input
+                }
+            }
 
             await parse_argument(visitor, options);
         }
