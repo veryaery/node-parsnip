@@ -7,6 +7,6 @@ export type TypeReturnObject = {
 
 export abstract class Type {
 
-    abstract parse(input: string, options: DefaultedOptions): TypeReturnObject | Promise<TypeReturnObject>;
+    abstract parse(input: string, options: DefaultedOptions): TypeReturnObject | Promise<TypeReturnObject>
 
 }

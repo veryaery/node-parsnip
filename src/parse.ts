@@ -4,6 +4,7 @@ import { Option } from "./interfaces/Option";
 import { Command } from "./interfaces/Command";
 import { Argument } from "./interfaces/Argument";
 import { TypeReturnObject } from "./Type";
+import { Fault } from "./Fault";
 
 import * as methods from "./lib/methods";
 
@@ -15,11 +16,39 @@ function next_argument_i(visitor: Visitor): number {
     }
 }
 
+function shortest(input: string[]) {
+    let output: string = input[0];
+
+    for (let i = 1; i < input.length; i++) {
+        const current_input = input[i];
+
+        if (current_input.length > output.length) {
+            output = current_input;
+        }
+    }
+
+    return output;
+}
+
 async function parse_argument(visitor: Visitor, options: DefaultedOptions): Promise<void> {
     const i: number = next_argument_i(visitor);
     const next: Argument = visitor.target.arguments[i];
 
-    let result: TypeReturnObject | Promise<TypeReturnObject> = next.type.parse(visitor.remaining, options);
+    let result: TypeReturnObject | Promise<TypeReturnObject>;
+
+    try {
+        result = next.type.parse(visitor.remaining, options);
+    } catch (error) {
+        if (error instanceof Fault) {
+            const from: number = visitor.input.length - visitor.remaining.length;
+
+            // Add margin from start of input to argument's fault's from and to 
+            error.from = error.from ? error.from + from : from;
+            error.to = error.to ? error.to + from : visitor.input.length;
+        }
+
+        throw error;
+    }
 
     if (result instanceof Promise) {
         result = await result;
@@ -53,7 +82,12 @@ async function parse_option(visitor: Visitor, options: DefaultedOptions): Promis
             // If there was a match, parse that option instead
             visitor.remaining = methods.trim_start(visitor.remaining.slice(before.length, visitor.remaining.length), options.separator);
             visitor.target = match;
-            await parse_option(visitor, options);
+
+            try {
+                await parse_option(visitor, options);
+            } catch (error) {
+                throw error;
+            }
 
             // If the last target was the command
             if (was_command) {
@@ -64,21 +98,27 @@ async function parse_option(visitor: Visitor, options: DefaultedOptions): Promis
                 break;
             }
         } else {
-            // TODO: Check if both the target's and command's argument parsing is done. If it is, throw an error. Too much input
+            // See if both the target's and command's argument parsing is done. If so, throw an error. Too much input
+            const fault: Fault = new Fault(null, () => "Too much input", visitor.input.length - visitor.remaining.length, visitor.input.length);
+            
             if (visitor.target == visitor.command) {
                 if (visitor.arguments.command.length == visitor.command.arguments.length) {
-                    // TODO: Throw error. Too much input
+                    throw fault;
                 }
             } else {
                 if (
                     visitor.arguments.options[visitor.target.name].length == visitor.target.arguments.length &&
                     visitor.arguments.command.length == visitor.command.arguments.length
                 ) {
-                    // TODO: Throw error. Too much input
+                    throw fault;
                 }
             }
 
-            await parse_argument(visitor, options);
+            try {
+                await parse_argument(visitor, options);
+            } catch (error) {
+                throw error;
+            }
         }
     }
 
@@ -89,7 +129,9 @@ async function parse_option(visitor: Visitor, options: DefaultedOptions): Promis
         const next: Argument = visitor.target.arguments[i];
 
         if (!next.optional) {
-            // TODO: Throw error. Argument required
+            const shortest_separator_length: number = typeof options.separator == "string" ? options.separator.length : shortest(<string[]>options.separator).length;
+            const from: number = visitor.input.length + shortest_separator_length;
+            throw new Fault({ argument: next }, properties => `Argument ${properties.argument.name} is required`, from, from + 1);
         }
     }
 }
@@ -111,8 +153,17 @@ async function parse_command(visitor: Visitor, options: DefaultedOptions): Promi
         visitor.remaining = methods.trim_start(visitor.remaining.slice(before.length, visitor.remaining.length), options.separator);
         visitor.command = match;
         visitor.target = match;
-        await parse_command(visitor, options);
+
+        try {
+            await parse_command(visitor, options);
+        } catch (error) {
+            throw error;
+        }
     } else {
-        await parse_option(visitor, options);
+        try {
+            await parse_option(visitor, options);
+        } catch (error) {
+            throw error;
+        }
     }
 }

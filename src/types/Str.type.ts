@@ -1,5 +1,6 @@
 import { Type, TypeReturnObject } from "../Type";
 import { DefaultedOptions } from "../interfaces/DefaultedOptions";
+import { Fault } from "../Fault";
 
 import * as methods from "../lib/methods";
 
@@ -18,9 +19,9 @@ export class Str extends Type {
     static default_options: StrOptions = {
         quotation: [ "\"", "'" ],
         escape: "\\"
-    }
+    };
 
-    options: DefaultedStrOptions
+    options: DefaultedStrOptions;
 
     constructor(options?: StrOptions) {
         super();
@@ -29,65 +30,67 @@ export class Str extends Type {
     }
 
     parse(input: string, options: DefaultedOptions): TypeReturnObject {
+        let remaining = input;
         let output: string = "";
         let escape: boolean = false;
         let quote: string = null;
 
-        while (input.length > 0) {
+        while (remaining.length > 0) {
             if (escape) {
                 const starts_with: string =
-                    methods.starts_with(input, this.options.escape) ||
-                    methods.starts_with(input, this.options.quotation);
+                    methods.starts_with(remaining, this.options.escape) ||
+                    methods.starts_with(remaining, this.options.quotation);
     
                 if (starts_with) {
                     output += starts_with;
-                    input = input.slice(starts_with.length, input.length);
+                    remaining = remaining.slice(starts_with.length, remaining.length);
                 } else {
-                    output += input[0];
-                    input = input.slice(1, input.length);
+                    output += remaining[0];
+                    remaining = remaining.slice(1, remaining.length);
                 }
                 
                 escape = false;
                 continue;
             }
 
-            const starts_with_separator: string = methods.starts_with(input, options.separator);
+            const starts_with_separator: string = methods.starts_with(remaining, options.separator);
 
             if (starts_with_separator) {
                 if (quote) {
                     output += starts_with_separator;
-                    input = input.slice(starts_with_separator.length, input.length);
+                    remaining = remaining.slice(starts_with_separator.length, remaining.length);
                 } else {
                     break;
                 }
             }
 
-            const starts_with_escape: string = methods.starts_with(input, this.options.escape);
+            const starts_with_escape: string = methods.starts_with(remaining, this.options.escape);
 
             if (starts_with_escape) {
                 escape = true;
-                input = input.slice(starts_with_escape.length, input.length);
+                remaining = remaining.slice(starts_with_escape.length, remaining.length);
 
-                if (input.length == 0) {
-                    // TODO: Throw an error. Attempting to escape null
+                if (remaining.length == 0) {
+                    throw new Fault(null, () => "Attempting to escape null", input.length - 1, input.length);
                 }
 
                 continue;
             }
 
-            const starts_with_quote: string = methods.starts_with(input, this.options.quotation);
+            const starts_with_quote: string = methods.starts_with(remaining, this.options.quotation);
 
             if (starts_with_quote) {
-                input = input.slice(starts_with_quote.length, input.length);
+                remaining = remaining.slice(starts_with_quote.length, remaining.length);
                 
                 if (quote) {
                     if (quote == starts_with_quote) {
-                        const starts_with_separator: string = methods.starts_with(input, options.separator);
+                        const starts_with_separator: string = methods.starts_with(remaining, options.separator);
 
-                        if (starts_with_separator || input.length == 0) {
+                        if (starts_with_separator || remaining.length == 0) {
                             break;
                         } else {
-                            // TODO: Throw an error. Expected separator at end of string
+                            const to: number = input.length - remaining.length;
+                            throw new Fault(null, () => "Expected separator at end of string", to - 1, to);
                         }
                     } else {
                         output += starts_with_quote;
@@ -99,13 +102,13 @@ export class Str extends Type {
                 continue;
             }
 
-            output += input[0];
-            input = input.slice(1, input.length);
+            output += remaining[0];
+            remaining = remaining.slice(1, remaining.length);
         }
 
         return {
             output,
-            remaining: input
+            remaining
         };
     }
 
