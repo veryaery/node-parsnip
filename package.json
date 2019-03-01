@@ -4,7 +4,8 @@
   "description": "Command parser",
   "main": "index.js",
   "scripts": {
-    "compile": "tsc"
+    "compile": "tsc",
+    "test": "npm run-script compile && mocha test"
   },
   "repository": {
     "type": "git",
@@ -17,6 +18,7 @@
   },
   "homepage": "https://github.com/aery-chan/node-parsnip#readme",
   "devDependencies": {
+    "mocha": "^6.0.2",
     "typescript": "^3.3.3"
   }
 }
