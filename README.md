@@ -5,3 +5,8 @@
 
 `npm install --only=dev`   
 `npm run-script compile`
+
+# Testing
+
+`npm install --only=dev`   
+`npm run-script test`
