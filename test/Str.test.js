@@ -1,7 +1,6 @@
 const assert = require("assert");
 
 const { Str } = require("../compiled/types/Str.type.js");
-const { Fault } = require("../compiled/Fault.js");
 
 describe("Str", () => {
 
