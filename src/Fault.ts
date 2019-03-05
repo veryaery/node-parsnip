@@ -4,6 +4,7 @@ export type MessageTemplate = (properties: any) => string
 
 export class Fault extends Error {
 
+    name: string = "Fault";
     visitor: Visitor;
     properties: any;
     default_template: MessageTemplate;

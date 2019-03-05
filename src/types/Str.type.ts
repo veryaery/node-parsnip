@@ -26,7 +26,7 @@ export class Str extends Type {
     constructor(options?: StrOptions) {
         super();
 
-        this.options = <DefaultedStrOptions>methods.default_properties(options, Str.default_options);
+        this.options = <DefaultedStrOptions>methods.default_properties(options || {}, Str.default_options);
     }
 
     parse(input: string, options: DefaultedOptions): TypeReturnObject {
