@@ -1,32 +1,32 @@
 const assert = require("assert");
 
-const { Str } = require("../compiled/types/Str.type.js");
+const { StringType } = require("../compiled/types/StringType.type.js");
 
-describe("Str", () => {
+describe("StringType", () => {
 
     it("Returns output as parsed string before separator", () => {
-        assert.equal((new Str()).parse("before after", { separator: " " }).output, "before");
+        assert.equal((new StringType()).parse("before after", { separator: " " }).output, "before");
     });
 
     it("Returns remaining as remaining string after output", () => {
-        assert.equal((new Str()).parse("before after", { separator: " " }).remaining, " after");
+        assert.equal((new StringType()).parse("before after", { separator: " " }).remaining, " after");
     });
 
     it("Returns output as parsed string containing escaped quote string", () => {
-        assert.equal((new Str()).parse("\\\"", { separator: " " }).output, "\"");
+        assert.equal((new StringType()).parse("\\\"", { separator: " " }).output, "\"");
     });
 
     it("Returns output as parsed string containing escaped escape string", () => {
-        assert.equal((new Str()).parse("\\\\", { separator: " " }).output, "\\");
+        assert.equal((new StringType()).parse("\\\\", { separator: " " }).output, "\\");
     });
 
     it("Returns output as parsed string containing escaped quote string more than 1 character long", () => {
-        assert.equal((new Str({ quotation: "quote" })).parse("\\quote", { separator: " " }).output, "quote");
+        assert.equal((new StringType({ quotation: "quote" })).parse("\\quote", { separator: " " }).output, "quote");
     });
 
     it("Throws Fault if escape string is at end of input", () => {
         try {
-            (new Str()).parse("\\", { separator: " " });
+            (new StringType()).parse("\\", { separator: " " });
         } catch (error) {
             if (error.name == "Fault") {
                 return;
@@ -37,20 +37,20 @@ describe("Str", () => {
     });
 
     it("Returns output as parsed quoted string containing separator", () => {
-        assert.equal((new Str()).parse("\"foo bar\" after", { separator: " " }).output, "foo bar");
+        assert.equal((new StringType()).parse("\"foo bar\" after", { separator: " " }).output, "foo bar");
     });
 
     it("Returns output as parsed quoted string containing other quote string", () => {
-        assert.equal((new Str()).parse("\"'\"", { separator: " " }).output, "'");
+        assert.equal((new StringType()).parse("\"'\"", { separator: " " }).output, "'");
     });
 
     it("Returns output as parsed quoted string quoted with quote string more than 1 characters long", () => {
-        assert.equal((new Str({ quotation: "quote" })).parse("quotefoo barquote", { separator: " " }).output, "foo bar");
+        assert.equal((new StringType({ quotation: "quote" })).parse("quotefoo barquote", { separator: " " }).output, "foo bar");
     });
 
     it("Throws Fault if quoted string isn't immediately followed by a separator", () => {
         try {
-            (new Str()).parse("\"foo bar\"apa bapa", { separator: " " });
+            (new StringType()).parse("\"foo bar\"apa bapa", { separator: " " });
         } catch (error) {
             if (error.name == "Fault") {
                 return;

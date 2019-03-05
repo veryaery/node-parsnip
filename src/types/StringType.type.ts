@@ -4,29 +4,29 @@ import { Fault } from "../Fault";
 
 import * as methods from "../lib/methods";
 
-export type StrOptions = {
+export type StringOptions = {
     quotation?: string | string[],
     escape?: string | string[]
 }
 
-interface DefaultedStrOptions {
+interface DefaultedStringOptions {
     quotation: string | string[],
     escape: string | string[]
 }
 
-export class Str extends Type {
+export class StringType extends Type {
     
-    static default_options: StrOptions = {
+    static default_options: StringOptions = {
         quotation: [ "\"", "'" ],
         escape: "\\"
     };
 
-    options: DefaultedStrOptions;
+    options: DefaultedStringOptions;
 
-    constructor(options?: StrOptions) {
+    constructor(options?: StringOptions) {
         super();
 
-        this.options = <DefaultedStrOptions>methods.default_properties(options || {}, Str.default_options);
+        this.options = <DefaultedStringOptions>methods.default_properties(options || {}, StringType.default_options);
     }
 
     parse(input: string, options: DefaultedOptions): TypeReturnObject {
