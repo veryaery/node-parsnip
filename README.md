@@ -1,4 +1,4 @@
-![](https://i.imgur.com/Tbm5tr9.png)
+![](https://i.imgur.com/KNy5gjv.png)
 (Character: Megumin from Konosuba, Background removed by [Romeu Severini](https://www.deviantart.com/romeuseverini))
 
 # Compiling
