@@ -2,6 +2,7 @@ import { Type, TypeReturnObject } from "../Type";
 import { DefaultedOptions } from "../parse";
 
 import * as methods from "../lib/methods";
+import { Fault } from "../Fault";
 
 export type NumberOptions = {
     base?: (string[])[],
@@ -114,10 +115,14 @@ export class NumberType extends Type {
                 continue;
             }
 
-            // TODO: throw fault. expected separator at end of number
+            const from: number = input.length - remaining.length;
+            throw new Fault(null, () => "Expected separator at end on number", from, from + 1);
         }
 
-        // TODO: throw fault if indexes is empty. number is null
+        if (!indexes[0] && !indexes[1]) {
+            const to: number = input.length - remaining.length;
+            throw new Fault(null, () => "Number is null", 0, to);
+        }
 
         return {
             indexes,

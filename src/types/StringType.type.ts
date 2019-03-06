@@ -71,7 +71,7 @@ export class StringType extends Type {
                 remaining = remaining.slice(starts_with_escape.length, remaining.length);
 
                 if (remaining.length == 0) {
-                    throw new Fault(null, () => "Attempting to escape null", input.length - 1, input.length);
+                    throw new Fault(null, () => "Attempting to escape null", input.length - starts_with_escape.length, input.length);
                 }
 
                 continue;
@@ -89,8 +89,8 @@ export class StringType extends Type {
                         if (starts_with_separator || remaining.length == 0) {
                             break;
                         } else {
-                            const to: number = input.length - remaining.length;
-                            throw new Fault(null, () => "Expected separator at end of string", to - 1, to);
+                            const from: number = input.length - remaining.length;
+                            throw new Fault(null, () => "Expected separator at end of string", from, from + 1);
                         }
                     } else {
                         output += starts_with_quote;
