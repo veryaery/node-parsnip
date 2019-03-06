@@ -1,4 +1,4 @@
-import { DefaultedOptions } from "./interfaces/DefaultedOptions";
+import { DefaultedOptions } from "./parse";
 
 export type TypeReturnObject = {
     output: any,

@@ -1,4 +1,4 @@
-import { Visitor } from "./interfaces/Visitor";
+import { Visitor } from "./parse";
 
 export type MessageTemplate = (properties: any) => string
 

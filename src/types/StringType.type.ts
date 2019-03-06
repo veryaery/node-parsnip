@@ -1,5 +1,5 @@
 import { Type, TypeReturnObject } from "../Type";
-import { DefaultedOptions } from "../interfaces/DefaultedOptions";
+import { DefaultedOptions } from "../parse";
 import { Fault } from "../Fault";
 
 import * as methods from "../lib/methods";
@@ -9,7 +9,7 @@ export type StringOptions = {
     escape?: string | string[]
 }
 
-interface DefaultedStringOptions {
+type DefaultedStringOptions = {
     quotation: string | string[],
     escape: string | string[]
 }

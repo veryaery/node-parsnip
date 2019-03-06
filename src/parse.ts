@@ -1,5 +1,3 @@
-import { Visitor } from "./interfaces/Visitor";
-import { DefaultedOptions } from "./interfaces/DefaultedOptions";
 import { Option } from "./interfaces/Option";
 import { Command } from "./interfaces/Command";
 import { Argument } from "./interfaces/Argument";
@@ -7,6 +5,21 @@ import { TypeReturnObject } from "./Type";
 import { Fault } from "./Fault";
 
 import * as methods from "./lib/methods";
+
+export type DefaultedOptions = {
+    separator: string | string[]
+}
+
+export type Visitor = {
+    input: string,
+    remaining: string,
+    command: Command,
+    target: Option,
+    arguments: {
+        command: any[],
+        options: object
+    }
+}
 
 function next_argument_i(visitor: Visitor): number {
     if (visitor.target == visitor.command) {
