@@ -6,12 +6,22 @@ import * as methods from "../lib/methods";
 
 export type StringOptions = {
     quotation?: string | string[],
-    escape?: string | string[]
+    escape?: string | string[],
+    min?: number,
+    max?: number
 }
 
 type DefaultedStringOptions = {
     quotation: string | string[],
-    escape: string | string[]
+    escape: string | string[],
+    min?: number,
+    max?: number
+}
+
+type ParseStringReturnObject = {
+    output: string,
+    excess_from: number,
+    remaining: string
 }
 
 export class StringType extends Type {
@@ -30,12 +40,39 @@ export class StringType extends Type {
     }
 
     parse(input: string, options: DefaultedOptions): TypeReturnObject {
+        const result: ParseStringReturnObject = this.parse_string(input, options);
+
+        if (this.options.min && result.output.length < this.options.min) {
+            throw new Fault({ min: this.options.min }, properties => `Must be at least ${properties.min} characters long`, 0, input.length - result.remaining.length);
+        } else if (this.options.max && result.output.length > this.options.max) {
+            throw new Fault({ max: this.options.max }, properties => `Exceeding maximum length of ${properties.max} characters`, result.excess_from, input.length - result.remaining.length);
+        }
+
+        return {
+            output: result.output,
+            remaining: result.remaining
+        };
+    }
+
+    private parse_string(input: string, options: DefaultedOptions): ParseStringReturnObject {
         let remaining = input;
         let output: string = "";
+
         let escape: boolean = false;
         let quote: string = null;
 
+        let last_remaining_length: number = remaining.length;
+        let excess_from: number = null;
+
         while (remaining.length > 0) {
+            if (this.options.max && !excess_from) {
+                if (output.length > this.options.max) {
+                    excess_from = input.length - last_remaining_length;
+                } else {
+                    last_remaining_length = remaining.length;
+                }
+            }
+
             if (escape) {
                 const starts_with: string =
                     methods.starts_with(remaining, this.options.escape) ||
@@ -59,6 +96,7 @@ export class StringType extends Type {
                 if (quote) {
                     output += starts_with_separator;
                     remaining = remaining.slice(starts_with_separator.length, remaining.length);
+                    continue;
                 } else {
                     break;
                 }
@@ -106,8 +144,13 @@ export class StringType extends Type {
             remaining = remaining.slice(1, remaining.length);
         }
 
+        if (this.options.max && !excess_from && output.length > this.options.max) {
+            excess_from = input.length - last_remaining_length;
+        }
+
         return {
             output,
+            excess_from,
             remaining
         };
     }

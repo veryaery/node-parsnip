@@ -56,6 +56,7 @@ export class NumberType extends Type {
         let negative: boolean = false;
 
         const indexes: (number[])[] = [[], []];
+
         const starts_with_negative: string = methods.starts_with(remaining, this.options.negative);
 
         if (starts_with_negative) {
