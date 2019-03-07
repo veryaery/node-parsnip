@@ -112,7 +112,7 @@ async function parse_option(visitor: Visitor, options: DefaultedOptions): Promis
             }
         } else {
             // See if both the target's and command's argument parsing is done. If so, throw an error. Too much input
-            const fault: Fault = new Fault(null, () => "Too much input", visitor.input.length - visitor.remaining.length, visitor.input.length);
+            const fault: Fault = new Fault(null, () => "Excess input", visitor.input.length - visitor.remaining.length, visitor.input.length);
             
             if (visitor.target == visitor.command) {
                 if (visitor.arguments.command.length == visitor.command.arguments.length) {
