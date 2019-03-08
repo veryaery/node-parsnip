@@ -98,7 +98,7 @@ export abstract class NumberType<options extends NumberOptions, defaulted_option
             for (let i = 0; i < this.options.base.length; i++) {
                 const symbols: string[] = this.options.base[i];
 
-                for (let symbol_i = 0; symbols.length; symbol_i++) {
+                for (let symbol_i = 0; symbol_i < symbols.length; symbol_i++) {
                     const symbol: string = symbols[symbol_i];
 
                     if (remaining.startsWith(symbol)) {
@@ -149,7 +149,8 @@ export abstract class NumberType<options extends NumberOptions, defaulted_option
             if (decimal) {
                 for (let i: number = 0; i < digits.length; i++) {
                     const digit: number = digits[i];
-                    output += digit * ((this.options.base.length ** -(i + 1)) || 1);
+                    const factor: number = (this.options.base.length ** (i + 1));
+                    output = Math.round((output + digit * ((this.options.base.length ** -(i + 1)) || 1)) * factor) / factor;
                 }
             } else {
                 const reversed_digits: number[] = digits.reverse();

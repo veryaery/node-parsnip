@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { methods } = require("../compiled/index.js");
+const methods = require("../compiled/lib/methods.js");
 
 describe("methods", () => {
 
