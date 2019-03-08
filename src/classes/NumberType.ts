@@ -35,6 +35,18 @@ export type ParseInputReturnObject = {
 
 export abstract class NumberType<options extends NumberOptions, defaulted_options extends DefaultedNumberOptions> implements Type {
 
+    static default_options: NumberOptions = {
+        base: [
+            [ "0" ], [ "1" ], [ "2" ],
+            [ "3" ], [ "4" ], [ "5" ],
+            [ "6" ], [ "7" ], [ "8" ],
+            [ "9" ]
+        ],
+        decimal: [ ".", "," ],
+        negative: "-",
+        ignore: "'"
+    };
+
     options: defaulted_options;
 
     constructor(options?: options, default_options?: options) {
