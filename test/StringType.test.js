@@ -8,7 +8,7 @@ describe("StringType", () => {
         assert.equal((new StringType()).parse("before after", { separator: " " }).output, "before");
     });
 
-    it("Returns remaining string after string input", () => {
+    it("Returns remaining string after string", () => {
         assert.equal((new StringType()).parse("before after", { separator: " " }).remaining, " after");
     });
 
@@ -18,10 +18,6 @@ describe("StringType", () => {
 
     it("Parses string containing escaped escape string", () => {
         assert.equal((new StringType()).parse("\\\\", { separator: " " }).output, "\\");
-    });
-
-    it("Parses string containing escaped quote string more than 1 character long", () => {
-        assert.equal((new StringType({ quotation: "quote" })).parse("\\quote", { separator: " " }).output, "quote");
     });
 
     it("Throws Fault if escape string is at end of input", () => {
@@ -44,11 +40,7 @@ describe("StringType", () => {
         assert.equal((new StringType()).parse("\"'\"", { separator: " " }).output, "'");
     });
 
-    it("Parses quoted string quoted with quote string more than 1 characters long", () => {
-        assert.equal((new StringType({ quotation: "quote" })).parse("quotefoo barquote", { separator: " " }).output, "foo bar");
-    });
-
-    it("Throws Fault if quoted string isn't immediately followed by a separator", () => {
+    it("Throws Fault if quoted string isn't followed by a separator", () => {
         try {
             (new StringType()).parse("\"foo bar\"apa bapa", { separator: " " });
         } catch (error) {

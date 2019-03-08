@@ -89,26 +89,26 @@ export abstract class NumberType<options extends NumberOptions, defaulted_option
             const starts_with_ignore: string = methods.starts_with(remaining, this.options.ignore);
 
             if (starts_with_ignore) {
-                remaining = remaining.slice(starts_with_decimal.length, remaining.length);
+                remaining = remaining.slice(starts_with_ignore.length, remaining.length);
                 continue;
             }
 
             let continue_while: boolean = false; // ._.
 
             for (let i = 0; i < this.options.base.length; i++) {
-                const symbols: string[] = this.options.base[i];
+                const digits: string[] = this.options.base[i];
 
-                for (let symbol_i = 0; symbol_i < symbols.length; symbol_i++) {
-                    const symbol: string = symbols[symbol_i];
+                for (let digit_i = 0; digit_i < digits.length; digit_i++) {
+                    const digit: string = digits[digit_i];
 
-                    if (remaining.startsWith(symbol)) {
+                    if (remaining.startsWith(digit)) {
                         if (decimal) {
                             indexes[1].push(i);
                         } else {
                             indexes[0].push(i);
                         }
 
-                        remaining = remaining.slice(symbol.length, remaining.length);
+                        remaining = remaining.slice(digit.length, remaining.length);
                         continue_while = true;
                         break;
                     }
@@ -127,7 +127,7 @@ export abstract class NumberType<options extends NumberOptions, defaulted_option
             throw new Fault(null, () => "Expected separator at end on number", from, from + 1);
         }
 
-        if (!indexes[0] && !indexes[1]) {
+        if (!indexes[0].length && !indexes[0].length) {
             const to: number = input.length - remaining.length;
             throw new Fault(null, () => "Number is null", 0, to);
         }
