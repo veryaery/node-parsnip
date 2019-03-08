@@ -1,6 +1,6 @@
-import { Type, TypeReturnObject } from "../Type";
+import { Type, TypeReturnObject } from "../interfaces/Type";
 import { DefaultedOptions } from "../parse";
-import { Fault } from "../Fault";
+import { Fault } from "../classes/Fault";
 
 import * as methods from "../lib/methods";
 
@@ -24,7 +24,7 @@ type ParseStringReturnObject = {
     remaining: string
 }
 
-export class StringType extends Type {
+export class StringType implements Type {
     
     static default_options: StringOptions = {
         quotation: [ "\"", "'" ],
@@ -34,8 +34,6 @@ export class StringType extends Type {
     options: DefaultedStringOptions;
 
     constructor(options?: StringOptions) {
-        super();
-
         this.options = <DefaultedStringOptions>methods.default_properties(options || {}, StringType.default_options);
     }
 
@@ -43,9 +41,9 @@ export class StringType extends Type {
         const result: ParseStringReturnObject = this.parse_string(input, options);
 
         if (this.options.min && result.output.length < this.options.min) {
-            throw new Fault({ min: this.options.min }, properties => `Must be a minimum ${properties.min} characters long`, 0, input.length - result.remaining.length);
+            throw new Fault({ min: this.options.min }, properties => `Must be a minimum of ${properties.min} characters long`, 0, input.length - result.remaining.length);
         } else if (this.options.max && result.output.length > this.options.max) {
-            throw new Fault({ max: this.options.max }, properties => `Exceeding maximum length of ${properties.max} characters`, result.excess_from, input.length - result.remaining.length);
+            throw new Fault({ max: this.options.max }, properties => `Must be a maximum of ${properties.max} characters long`, result.excess_from, input.length - result.remaining.length);
         }
 
         return {

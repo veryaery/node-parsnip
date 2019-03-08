@@ -1,3 +1,5 @@
+import * as methods from "./lib/methods";
+
 export type Options = {
     separator?: string | string[]
 }
@@ -6,4 +8,5 @@ const default_options: Options = {
     separator: " "
 };
 
-console.log("Hello, world!");
+export { methods };
+export { StringType } from "./types/StringType.type";

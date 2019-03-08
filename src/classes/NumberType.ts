@@ -1,59 +1,53 @@
-import { Type, TypeReturnObject } from "../Type";
+import {
+    Type,
+    TypeReturnObject
+} from "../interfaces/Type";
 import { DefaultedOptions } from "../parse";
+import { Fault } from "./Fault";
 
 import * as methods from "../lib/methods";
-import { Fault } from "../Fault";
 
 export type NumberOptions = {
     base?: (string[])[],
     decimal?: string | string[],
     negative?: string | string[],
-    ignore?: string | string[]
+    ignore?: string | string[],
+    min?: number,
+    max?: number
 }
 
-type DefaultedNumberOptions = {
+export type DefaultedNumberOptions = {
     base: (string[])[],
     decimal: string | string[],
     negative: string | string[],
-    ignore: string | string[]
+    ignore: string | string[],
+    min?: number,
+    max?: number
 }
 
-type ParseInputReturnObject = {
+export type ParseInputReturnObject = {
     indexes: (number[])[],
+    decimal: boolean,
+    decimal_from: number,
     negative: boolean,
     remaining: string
 }
 
-export class NumberType extends Type {
+export abstract class NumberType<options extends NumberOptions, defaulted_options extends DefaultedNumberOptions> implements Type {
 
-    static default_options: NumberOptions = {
-        base: [
-            [ "0" ], [ "1" ], [ "2" ],
-            [ "3" ], [ "4" ], [ "5" ],
-            [ "6" ], [ "7" ], [ "8" ],
-            [ "9" ]
-        ],
-        decimal: [ ".", "," ],
-        negative: "-",
-        ignore: "'"
-    };
+    options: defaulted_options;
 
-    options: DefaultedNumberOptions;
-
-    constructor(options?: NumberOptions) {
-        super();
-
-        this.options = <DefaultedNumberOptions>methods.default_properties(options || {}, NumberType.default_options);
+    constructor(options?: options, default_options?: options) {
+        this.options = <defaulted_options>methods.default_properties(options || {}, default_options || {});
     }
 
-    parse(input: string, options: DefaultedOptions): TypeReturnObject {
-        return null;
-    }
+    abstract parse(input: string, options: DefaultedOptions): TypeReturnObject;
 
-    private parse_input(input: string, options: DefaultedOptions): ParseInputReturnObject {
+    protected parse_input(input: string, options: DefaultedOptions): ParseInputReturnObject {
         let remaining: string = input;
         let decimal: boolean = false;
         let negative: boolean = false;
+        let decimal_from: number = null;
 
         const indexes: (number[])[] = [[], []];
 
@@ -75,6 +69,7 @@ export class NumberType extends Type {
 
             if (starts_with_decimal) {
                 decimal = true;
+                decimal_from = input.length - remaining.length;
                 remaining = remaining.slice(starts_with_decimal.length, remaining.length);
                 continue;
             }
@@ -127,9 +122,44 @@ export class NumberType extends Type {
 
         return {
             indexes,
+            decimal,
+            decimal_from,
             negative,
             remaining
         };
+    }
+
+    protected parse_number(indexes: (number[])[], negative: boolean): number {
+        let output: number = 0;
+        let decimal: boolean = false;
+
+        for (const digits of indexes) {
+            if (decimal) {
+                for (let i: number = 0; i < digits.length; i++) {
+                    const digit: number = digits[i];
+                    output += digit * ((this.options.base.length ** -(i + 1)) || 1);
+                }
+            } else {
+                const reversed_digits: number[] = digits.reverse();
+    
+                for (let i: number = 0; i < digits.length; i++) {
+                    const digit: number = reversed_digits[i];
+                    output += digit * ((this.options.base.length ** i) || 1);
+                }
+            }
+            
+            decimal = true;
+        }
+
+        return negative ? -output : output;
+    }
+    
+    protected validate(output: number, input: string, remaining: string): void {
+        if (this.options.min && output < this.options.min) {
+            throw new Fault({ min: this.options.min }, properties => `Must be a minimum of ${properties.min}`, 0, input.length - remaining.length);
+        } else if (this.options.max && output > this.options.max) {
+            throw new Fault({ max: this.options.max }, properties => `Must be a maximum of ${properties.max}`, 0, input.length - remaining.length);
+        }
     }
 
 }

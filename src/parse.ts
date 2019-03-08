@@ -1,13 +1,26 @@
-import { Option } from "./interfaces/Option";
-import { Command } from "./interfaces/Command";
-import { Argument } from "./interfaces/Argument";
-import { TypeReturnObject } from "./Type";
-import { Fault } from "./Fault";
+import { Type, TypeReturnObject } from "./interfaces/Type";
+import { Fault } from "./classes/Fault";
 
 import * as methods from "./lib/methods";
 
 export type DefaultedOptions = {
     separator: string | string[]
+}
+
+export type Argument = {
+    name?: string,
+    optional?: boolean,
+    type: Type
+}
+
+export type Option = {
+    name: string,
+    arguments: Argument[]
+}
+
+export type Command = Option & {
+    commands: object | Command[],
+    options: object | Option[]
 }
 
 export type Visitor = {
@@ -21,6 +34,7 @@ export type Visitor = {
     }
 }
 
+
 function next_argument_i(visitor: Visitor): number {
     if (visitor.target == visitor.command) {
         return visitor.arguments.command.length;
@@ -28,6 +42,7 @@ function next_argument_i(visitor: Visitor): number {
         return visitor.arguments.options[visitor.target.name].length;
     }
 }
+
 
 function shortest(input: string[]) {
     let output: string = input[0];

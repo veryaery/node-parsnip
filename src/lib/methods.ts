@@ -1,4 +1,4 @@
-import { Option } from "../interfaces/Option";
+import { Option } from "../parse";
 
 export function starts_with(input: string, matches: string | string[]): string {
     if (typeof matches == "string") {

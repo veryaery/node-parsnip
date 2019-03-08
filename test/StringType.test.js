@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { StringType } = require("../compiled/types/StringType.type.js");
+const { StringType } = require("../compiled/index.js");
 
 describe("StringType", () => {
 
