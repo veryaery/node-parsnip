@@ -8,7 +8,7 @@ describe("StringType", () => {
         assert.equal((new StringType()).parse("before after", { separator: " " }).output, "before");
     });
 
-    it("Returns remaining string after output", () => {
+    it("Returns remaining string after string input", () => {
         assert.equal((new StringType()).parse("before after", { separator: " " }).remaining, " after");
     });
 

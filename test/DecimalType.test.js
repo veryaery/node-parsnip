@@ -1,13 +1,7 @@
 const assert = require("assert");
 
 const { DecimalType } = require("../compiled/index.js").types;
-
-const base12 = [
-    [ "0" ], [ "1" ], [ "2" ],
-    [ "3" ], [ "4" ], [ "5" ],
-    [ "6" ], [ "7" ], [ "8" ],
-    [ "9" ], [ "A" ], [ "B" ]
-];
+const constants = require("./constants.js");
 
 describe("DecimalType", () => {
 
@@ -20,11 +14,15 @@ describe("DecimalType", () => {
     });
 
     it("Parses base12 decimal 3.184809", () => {
-        assert.equal((new DecimalType({ base: base12 })).parse("3.184809", { separator: " " }).output, 3.1415925202546298);
+        assert.equal((new DecimalType({ base: constants.base12 })).parse("3.184809", { separator: " " }).output, 3.1415925202546298);
     });
 
     it("Parses base12 decimal 52.9B9537", () => {
-        assert.equal((new DecimalType({ base: base12 })).parse("52.9B9537", { separator: " " }).output, 62.83185274937843);
+        assert.equal((new DecimalType({ base: constants.base12 })).parse("52.9B9537", { separator: " " }).output, 62.83185274937843);
+    });
+
+    it("Returns remaining string after decimal input", () => {
+        assert.equal((new DecimalType()).parse("3.141592 after", { separator: " " }).remaining, " after");
     });
 
 });
