@@ -44,7 +44,7 @@ function next_argument_i(visitor: Visitor): number {
 }
 
 
-function shortest(input: string[]) {
+function shortest(input: string[]): string {
     let output: string = input[0];
 
     for (let i = 1; i < input.length; i++) {
@@ -164,7 +164,7 @@ async function parse_option(visitor: Visitor, options: DefaultedOptions): Promis
     }
 }
 
-async function parse_command(visitor: Visitor, options: DefaultedOptions): Promise<void> {
+export async function parse_command(visitor: Visitor, options: DefaultedOptions): Promise<void> {
     const before = methods.before(visitor.remaining, options.separator);
 
     let match: Command;
