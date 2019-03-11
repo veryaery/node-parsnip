@@ -34,12 +34,12 @@ export type Visitor = {
     }
 }
 
-
 function next_argument_i(visitor: Visitor): number {
     if (visitor.target == visitor.command) {
         return visitor.arguments.command.length;
     } else {
-        return visitor.arguments.options[visitor.target.name].length;
+        const option_arguments: any[] = visitor.arguments.options[visitor.target.name];
+        return option_arguments ? option_arguments.length : 0;
     }
 }
 
@@ -58,7 +58,7 @@ function shortest(input: string[]): string {
     return output;
 }
 
-async function parse_argument(visitor: Visitor, options: DefaultedOptions): Promise<void> {
+export async function parse_argument(visitor: Visitor, options: DefaultedOptions): Promise<void> {
     const i: number = next_argument_i(visitor);
     const next: Argument = visitor.target.arguments[i];
 
@@ -67,7 +67,7 @@ async function parse_argument(visitor: Visitor, options: DefaultedOptions): Prom
     try {
         result = next.type.parse(visitor.remaining, options);
     } catch (error) {
-        if (error instanceof Fault) {
+        if (error.name == "Fault") {
             const from: number = visitor.input.length - visitor.remaining.length;
 
             // Add margin from start of input to argument's fault's from and to 
@@ -87,21 +87,27 @@ async function parse_argument(visitor: Visitor, options: DefaultedOptions): Prom
     if (visitor.target == visitor.command) {
         visitor.arguments.command[i] = result.output;
     } else {
-        visitor.arguments.options[visitor.target.name][i] = result.output;
+        let option_arguments: any[] = visitor.arguments.options[visitor.target.name];
+
+        if (!option_arguments) {
+            option_arguments = visitor.arguments.options[visitor.target.name] = [];
+        }
+
+        option_arguments[i] = result.output;
     }
 }
 
-async function parse_option(visitor: Visitor, options: DefaultedOptions): Promise<void> {
+export async function parse_option(visitor: Visitor, options: DefaultedOptions): Promise<void> {
     while (visitor.remaining.length > 0) {
         const before = methods.before(visitor.remaining, options.separator);
 
         let match: Option;
 
         // Match input before next separator with an option
-        if (typeof visitor.command.options == "object") {
-            match = methods.match_object(before, visitor.command.options);
-        } else {
+        if (visitor.command.options instanceof Array) {
             match = methods.match_array(before, visitor.command.options);
+        } else {
+            match = methods.match_object(before, visitor.command.options);
         }
 
         if (match) {
@@ -126,19 +132,20 @@ async function parse_option(visitor: Visitor, options: DefaultedOptions): Promis
                 break;
             }
         } else {
-            // See if both the target's and command's argument parsing is done. If so, throw an error. Too much input
-            const fault: Fault = new Fault(null, () => "Excess input", visitor.input.length - visitor.remaining.length, visitor.input.length);
-            
+            // Break parsing once both command's and target's parsing is done
             if (visitor.target == visitor.command) {
                 if (visitor.arguments.command.length == visitor.command.arguments.length) {
-                    throw fault;
+                    break;
                 }
             } else {
+                const option_arguments: any[] = visitor.arguments.options[visitor.target.name];
+
                 if (
-                    visitor.arguments.options[visitor.target.name].length == visitor.target.arguments.length &&
+                    option_arguments &&
+                    option_arguments.length == visitor.target.arguments.length &&
                     visitor.arguments.command.length == visitor.command.arguments.length
                 ) {
-                    throw fault;
+                    break;
                 }
             }
 
@@ -170,10 +177,10 @@ export async function parse_command(visitor: Visitor, options: DefaultedOptions)
     let match: Command;
 
     // Match input before next separator with a command 
-    if (typeof visitor.command.commands == "object") {
-        match = <Command>methods.match_object(before, visitor.command.commands);
-    } else {
+    if (visitor.command.commands instanceof Array) {
         match = <Command>methods.match_array(before, visitor.command.commands);
+    } else {
+        match = <Command>methods.match_object(before, visitor.command.commands);
     }
 
     if (match) {
