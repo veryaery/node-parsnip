@@ -87,13 +87,7 @@ export async function parse_argument(visitor: Visitor, options: DefaultedOptions
     if (visitor.target == visitor.command) {
         visitor.arguments.command[i] = result.output;
     } else {
-        let option_arguments: any[] = visitor.arguments.options[visitor.target.name];
-
-        if (!option_arguments) {
-            option_arguments = visitor.arguments.options[visitor.target.name] = [];
-        }
-
-        option_arguments[i] = result.output;
+        visitor.arguments.options[visitor.target.name][i] = result.output;
     }
 }
 
@@ -116,6 +110,7 @@ export async function parse_option(visitor: Visitor, options: DefaultedOptions):
             // If there was a match, parse that option instead
             visitor.remaining = methods.trim_start(visitor.remaining.slice(before.length, visitor.remaining.length), options.separator);
             visitor.target = match;
+            visitor.arguments.options[visitor.target.name] = [];
 
             try {
                 await parse_option(visitor, options);
@@ -138,11 +133,8 @@ export async function parse_option(visitor: Visitor, options: DefaultedOptions):
                     break;
                 }
             } else {
-                const option_arguments: any[] = visitor.arguments.options[visitor.target.name];
-
                 if (
-                    option_arguments &&
-                    option_arguments.length == visitor.target.arguments.length &&
+                    visitor.arguments.options[visitor.target.name].length == visitor.target.arguments.length &&
                     visitor.arguments.command.length == visitor.command.arguments.length
                 ) {
                     break;
