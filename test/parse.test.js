@@ -14,10 +14,8 @@ describe("parse", async () => {
                 remaining: "",
                 command: command,
                 target: command,
-                arguments: {
-                    command: [],
-                    options: {}
-                }
+                arguments: [],
+                options: {}
             };
     
             await parse.parse_command(visitor, { separator: " " });
@@ -35,10 +33,8 @@ describe("parse", async () => {
                 remaining: "child",
                 command: command,
                 target: command,
-                arguments: {
-                    command: [],
-                    options: {}
-                }
+                arguments: [],
+                options: {}
             };
     
             await parse.parse_command(visitor, { separator: " " });
@@ -61,15 +57,13 @@ describe("parse", async () => {
                 remaining: "--option",
                 command: command,
                 target: command,
-                arguments: {
-                    command: [],
-                    options: {}
-                }
+                arguments: [],
+                options: {}
             };
 
             await parse.parse_option(visitor, { separator: " " });
 
-            assert.deepEqual(visitor.arguments.options.option, []);
+            assert.deepEqual(visitor.options.option, []);
         });
 
     });

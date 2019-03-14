@@ -28,18 +28,15 @@ export type Visitor = {
     remaining: string,
     command: Command,
     target: Option,
-    arguments: {
-        command: any[],
-        options: object
-    }
+    arguments: any[],
+    options: {}
 }
 
 function next_argument_i(visitor: Visitor): number {
     if (visitor.target == visitor.command) {
-        return visitor.arguments.command.length;
+        return visitor.arguments.length;
     } else {
-        const option_arguments: any[] = visitor.arguments.options[visitor.target.name];
-        return option_arguments ? option_arguments.length : 0;
+        return visitor.options[visitor.target.name].length;
     }
 }
 
@@ -85,9 +82,9 @@ export async function parse_argument(visitor: Visitor, options: DefaultedOptions
     visitor.remaining = result.remaining;
 
     if (visitor.target == visitor.command) {
-        visitor.arguments.command[i] = result.output;
+        visitor.arguments[i] = result.output;
     } else {
-        visitor.arguments.options[visitor.target.name][i] = result.output;
+        visitor.options[visitor.target.name][i] = result.output;
     }
 }
 
@@ -110,7 +107,7 @@ export async function parse_option(visitor: Visitor, options: DefaultedOptions):
             // If there was a match, parse that option instead
             visitor.remaining = methods.trim_start(visitor.remaining.slice(before.length, visitor.remaining.length), options.separator);
             visitor.target = match;
-            visitor.arguments.options[visitor.target.name] = [];
+            visitor.options[visitor.target.name] = [];
 
             try {
                 await parse_option(visitor, options);
@@ -129,13 +126,13 @@ export async function parse_option(visitor: Visitor, options: DefaultedOptions):
         } else {
             // Break parsing once both command's and target's parsing is done
             if (visitor.target == visitor.command) {
-                if (visitor.arguments.command.length == visitor.command.arguments.length) {
+                if (visitor.arguments.length == visitor.command.arguments.length) {
                     break;
                 }
             } else {
                 if (
-                    visitor.arguments.options[visitor.target.name].length == visitor.target.arguments.length &&
-                    visitor.arguments.command.length == visitor.command.arguments.length
+                    visitor.options[visitor.target.name].length == visitor.target.arguments.length &&
+                    visitor.arguments.length == visitor.command.arguments.length
                 ) {
                     break;
                 }
