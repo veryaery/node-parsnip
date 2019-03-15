@@ -59,6 +59,7 @@ export class CommandBuilder extends OptionBuilder {
     build(): Command {
         return {
             name: this.name,
+            aliases: this.aliases,
             arguments: this.arguments,
             commands: this.commands,
             options: this.options

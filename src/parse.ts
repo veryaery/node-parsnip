@@ -15,6 +15,7 @@ export type Argument = {
 
 export type Option = {
     name: string,
+    aliases?: string[],
     arguments: Argument[]
 }
 

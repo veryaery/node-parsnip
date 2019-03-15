@@ -3,6 +3,7 @@ import { Option, Argument } from "../parse";
 export class OptionBuilder {
 
     name: string;
+    aliases: string[] = [];
     arguments: Argument[] = [];
 
     constructor(name: string) {
@@ -11,6 +12,16 @@ export class OptionBuilder {
 
     set_name(name: string): OptionBuilder {
         this.name = name;
+        return this;
+    }
+
+    set_aliases(aliases: string[]): OptionBuilder {
+        this.aliases = aliases;
+        return this;
+    }
+
+    add_alias(alias: string): OptionBuilder {
+        this.aliases.push(alias);
         return this;
     }
 
@@ -27,6 +38,7 @@ export class OptionBuilder {
     build(): Option {
         return {
             name: this.name,
+            aliases: this.aliases,
             arguments: this.arguments
         };
     }

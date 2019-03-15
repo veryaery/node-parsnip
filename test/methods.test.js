@@ -1,6 +1,7 @@
 const assert = require("assert");
 
 const methods = require("../compiled/lib/methods.js");
+const parsnip = require("../compiled/index.js");
 
 describe("methods", () => {
 
@@ -82,30 +83,31 @@ describe("methods", () => {
     describe("match_array", () => {
         
         it("Returns matched Option of any of array", () => {
-            const match = {
-                name: "bar",
-                arguments: [] 
-            };
+            const match = parsnip.option("bar").build();
 
             assert.equal(methods.match_array("bar", [
-                {
-                    name: "foo",
-                    arguments: []
-                },
+                parsnip.option("foo").build(),
+                match
+            ]), match);
+        });
+
+        it("Returns matched Option by alias of any of array", () => {
+            const match = parsnip.option("apa")
+                .add_alias("bapa")
+                .build();
+
+            assert.equal(methods.match_array("bapa", [
+                parsnip.option("foo")
+                    .add_alias("bar")
+                    .build(),
                 match
             ]), match);
         });
 
         it("Returns null if it didn't match any of array", () => {
-            assert.equal(methods.match_array("apabapa", [
-                {
-                    name: "foo",
-                    arguments: []
-                },
-                {
-                    name: "bar",
-                    arguments: []
-                }
+            assert.equal(methods.match_array("apa", [
+                parsnip.option("foo").build(),
+                parsnip.option("bar").build()
             ]), null);
         });
 
@@ -114,30 +116,33 @@ describe("methods", () => {
     describe("match_object", () => {
 
         it("Returns matched Option of any in object", () => {
-            const match = {
-                name: "bapa",
-                arguements: []
-            };
+            const match = parsnip.option("bapa").build();
 
             assert.equal(methods.match_object("barbapa", {
-                "foo": [ {
-                    name: "apa",
-                    arguments: []
-                } ],
+                "foo": [ parsnip.option("apa").build() ],
                 "bar": [ match ]
+            }), match);
+        });
+
+        it("Returns matched Option by alias of any in object", () => {
+            const match = parsnip.option("b")
+                .add_alias("c")
+                .build();
+
+            assert.equal(methods.match_object("ac", {
+                "x": [
+                    parsnip.option("y")
+                        .add_alias("z")
+                        .build() 
+                ],
+                "a": [ match ]
             }), match);
         });
 
         it("Returns null if it didn't match any in object", () => {
             assert.equal(methods.match_object("null", {
-                "foo": [ {
-                    name: "apa",
-                    arguements: []
-                } ],
-                "bar": [ {
-                    name: "bapa",
-                    arguments: []
-                } ]
+                "foo": [ parsnip.option("apa").build() ],
+                "bar": [ parsnip.option("bapa").build() ]
             }), null);
         });
 

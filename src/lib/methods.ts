@@ -49,8 +49,15 @@ export function before(input: string, separator: string | string[]): string {
 
 export function match_array(input: string, matches: Option[]): Option {
     for (const option of matches) {
-        if (option.name == input) {
+        if (input == option.name) {
             return option;
+        } else if (option.aliases) {
+            // Try to match Option's aliases if it has any
+            for (const alias of option.aliases) {
+                if (input == alias) {
+                    return option;
+                }
+            }
         }
     }
 
@@ -65,8 +72,15 @@ export function match_object(input: string, matches: object): Option {
             const trimmed_input: string = input.slice(prefix.length, input.length);
 
             for (const option of options) {
-                if (option.name == trimmed_input) {
+                if (trimmed_input == option.name) {
                     return option;
+                } else if (option.aliases) {
+                    // Try to match Option's aliases if it has any
+                    for (const alias of option.aliases) {
+                        if (trimmed_input == alias) {
+                            return option;
+                        }
+                    }
                 }
             }
         }
