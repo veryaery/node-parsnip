@@ -79,7 +79,7 @@ export async function parse_argument(visitor: Visitor, options: DefaultedOptions
         result = await result;
     }
 
-    visitor.remaining = result.remaining;
+    visitor.remaining = methods.trim_start(result.remaining, options.separator);
 
     if (visitor.target == visitor.command) {
         visitor.arguments[i] = result.output;

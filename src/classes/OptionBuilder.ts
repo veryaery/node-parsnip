@@ -27,7 +27,7 @@ export class OptionBuilder {
     build(): Option {
         return {
             name: this.name,
-            arguments: []
+            arguments: this.arguments
         };
     }
 
