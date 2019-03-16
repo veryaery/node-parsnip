@@ -20,8 +20,8 @@ export type Option = {
 }
 
 export type Command = Option & {
-    commands: object | Command[],
-    options: object | Option[]
+    commands?: object | Command[],
+    options?: object | Option[]
 }
 
 export type Visitor = {
@@ -91,40 +91,45 @@ export async function parse_argument(visitor: Visitor, options: DefaultedOptions
 
 export async function parse_option(visitor: Visitor, options: DefaultedOptions): Promise<void> {
     while (visitor.remaining.length > 0) {
-        const before = methods.before(visitor.remaining, options.separator);
+        if (visitor.command.options) {
+            const before = methods.before(visitor.remaining, options.separator);
 
-        let match: Option;
-
-        // Match input before next separator with an option
-        if (visitor.command.options instanceof Array) {
-            match = methods.match_array(before, visitor.command.options);
-        } else {
-            match = methods.match_object(before, visitor.command.options);
+            let match: Option;
+    
+            // Match input before next separator with an option
+            if (visitor.command.options instanceof Array) {
+                match = methods.match_array(before, visitor.command.options);
+            } else {
+                match = methods.match_object(before, visitor.command.options);
+            }
+    
+            if (match) {
+                const was_command: boolean = visitor.target == visitor.command;
+    
+                // If there was a match, parse that option instead
+                visitor.remaining = methods.trim_start(visitor.remaining.slice(before.length, visitor.remaining.length), options.separator);
+                visitor.target = match;
+                visitor.options[visitor.target.name] = [];
+    
+                try {
+                    await parse_option(visitor, options);
+                } catch (error) {
+                    throw error;
+                }
+    
+                // If the last target was the command
+                if (was_command) {
+                    // Try to resume command argument parsing after parsing matched option
+                    visitor.target = visitor.command;
+                    continue;
+                } else {
+                    // Cancel option argument parsing
+                    break;
+                }
+            }
         }
 
-        if (match) {
-            const was_command: boolean = visitor.target == visitor.command;
-
-            // If there was a match, parse that option instead
-            visitor.remaining = methods.trim_start(visitor.remaining.slice(before.length, visitor.remaining.length), options.separator);
-            visitor.target = match;
-            visitor.options[visitor.target.name] = [];
-
-            try {
-                await parse_option(visitor, options);
-            } catch (error) {
-                throw error;
-            }
-
-            // If the last target was the command
-            if (was_command) {
-                // Try to resume command argument parsing after parsing matched option
-                visitor.target = visitor.command;
-            } else {
-                // Cancel option argument parsing
-                break;
-            }
-        } else if (visitor.target.arguments) {
+        if (visitor.target.arguments) {
             // Break parsing once both command's and target's parsing is done
             if (visitor.target == visitor.command) {
                 if (visitor.arguments.length == visitor.target.arguments.length) {
@@ -167,33 +172,37 @@ export async function parse_option(visitor: Visitor, options: DefaultedOptions):
 }
 
 export async function parse_command(visitor: Visitor, options: DefaultedOptions): Promise<void> {
-    const before = methods.before(visitor.remaining, options.separator);
+    if (visitor.command.commands) {
+        const before = methods.before(visitor.remaining, options.separator);
+    
+        let match: Command;
+    
+        // Match input before next separator with a command 
+        if (visitor.command.commands instanceof Array) {
+            match = <Command>methods.match_array(before, visitor.command.commands);
+        } else {
+            match = <Command>methods.match_object(before, visitor.command.commands);
+        }
+    
+        if (match) {
+            // If there was a match, parse the matched command
+            visitor.remaining = methods.trim_start(visitor.remaining.slice(before.length, visitor.remaining.length), options.separator);
+            visitor.command = match;
+            visitor.target = match;
+    
+            try {
+                await parse_command(visitor, options);
+            } catch (error) {
+                throw error;
+            }
 
-    let match: Command;
-
-    // Match input before next separator with a command 
-    if (visitor.command.commands instanceof Array) {
-        match = <Command>methods.match_array(before, visitor.command.commands);
-    } else {
-        match = <Command>methods.match_object(before, visitor.command.commands);
+            return;
+        }
     }
 
-    if (match) {
-        // If there was a match, parse the matched command
-        visitor.remaining = methods.trim_start(visitor.remaining.slice(before.length, visitor.remaining.length), options.separator);
-        visitor.command = match;
-        visitor.target = match;
-
-        try {
-            await parse_command(visitor, options);
-        } catch (error) {
-            throw error;
-        }
-    } else {
-        try {
-            await parse_option(visitor, options);
-        } catch (error) {
-            throw error;
-        }
+    try {
+        await parse_option(visitor, options);
+    } catch (error) {
+        throw error;
     }
 }
