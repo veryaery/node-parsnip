@@ -16,7 +16,7 @@ export type Argument = {
 export type Option = {
     name: string,
     aliases?: string[],
-    arguments: Argument[]
+    arguments?: Argument[]
 }
 
 export type Command = Option & {
@@ -124,16 +124,19 @@ export async function parse_option(visitor: Visitor, options: DefaultedOptions):
                 // Cancel option argument parsing
                 break;
             }
-        } else {
+        } else if (visitor.target.arguments) {
             // Break parsing once both command's and target's parsing is done
             if (visitor.target == visitor.command) {
-                if (visitor.arguments.length == visitor.command.arguments.length) {
+                if (visitor.arguments.length == visitor.target.arguments.length) {
                     break;
                 }
             } else {
                 if (
-                    visitor.options[visitor.target.name].length == visitor.target.arguments.length &&
-                    visitor.arguments.length == visitor.command.arguments.length
+                    (
+                        visitor.command.arguments &&
+                        visitor.arguments.length == visitor.command.arguments.length &&
+                        visitor.options[visitor.target.name].length == visitor.target.arguments.length
+                    ) || (visitor.options[visitor.target.name].length == visitor.target.arguments.length)
                 ) {
                     break;
                 }
@@ -147,16 +150,18 @@ export async function parse_option(visitor: Visitor, options: DefaultedOptions):
         }
     }
 
-    // Make sure all required arguments were parsed
-    const i: number = next_argument_i(visitor);
-
-    if (i < visitor.target.arguments.length) {
-        const next: Argument = visitor.target.arguments[i];
-
-        if (!next.optional) {
-            const shortest_separator_length: number = typeof options.separator == "string" ? options.separator.length : shortest(<string[]>options.separator).length;
-            const from: number = visitor.input.length + shortest_separator_length;
-            throw new Fault({ argument: next }, properties => `Argument ${properties.argument.name} is required`, from, from + 1);
+    if (visitor.target.arguments) {
+        // Make sure all required arguments were parsed
+        const i: number = next_argument_i(visitor);
+    
+        if (i < visitor.target.arguments.length) {
+            const next: Argument = visitor.target.arguments[i];
+    
+            if (!next.optional) {
+                const shortest_separator_length: number = typeof options.separator == "string" ? options.separator.length : shortest(<string[]>options.separator).length;
+                const from: number = visitor.input.length + shortest_separator_length;
+                throw new Fault({ argument: next }, properties => `Argument ${properties.argument.name} is required`, from, from + 1);
+            }
         }
     }
 }
