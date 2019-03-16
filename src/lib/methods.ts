@@ -1,24 +1,18 @@
 import { Option } from "../parse";
 
-export function starts_with(input: string, matches: string | string[]): string {
-    if (typeof matches == "string") {
-        if (input.startsWith(matches)) {
-            return matches;
-        }
-    } else {
-        for (const match of matches) {
-            if (input.startsWith(match)) {
-                return match;
-            }
+export function starts_with(input: string, matches: string[]): string {
+    for (const match of matches) {
+        if (input.startsWith(match)) {
+            return match;
         }
     }
 
     return null;
 }
 
-export function trim_start(input: string, separator: string | string[]): string {
+export function trim_start(input: string, separators: string[]): string {
     while (input.length > 0) {
-        const starts_with_separator: string = starts_with(input, separator);
+        const starts_with_separator: string = starts_with(input, separators);
 
         if (starts_with_separator) {
             input = input.slice(starts_with_separator.length, input.length);
@@ -30,11 +24,11 @@ export function trim_start(input: string, separator: string | string[]): string 
     return input;
 }
 
-export function before(input: string, separator: string | string[]): string {
+export function before(input: string, separators: string[]): string {
     let before: string = "";
 
     while (input.length > 0) {
-        const starts_with_separator: string = starts_with(input, separator);
+        const starts_with_separator: string = starts_with(input, separators);
 
         if (starts_with_separator) {
             break;

@@ -10,16 +10,17 @@ class Type {
         let output = "";
 
         while (remaining.length > 0) {
-            if (typeof options.separator == "string") {
-                if (remaining.startsWith(options.separator)) {
+            let break_while = false;
+
+            for (const separator of options.separator) {
+                if (remaining.startsWith(separator)) {
+                    break_while = true;
                     break;
                 }
-            } else {
-                for (const separator of options.separator) {
-                    if (remaining.startsWith(separator)) {
-                        break;
-                    }
-                }
+            }
+
+            if (break_while) {
+                break;
             }
 
             output += remaining.slice(0, 1);
@@ -49,7 +50,7 @@ describe("parse", async () => {
                 options: {}
             };
     
-            await parse.parse_command(visitor, { separator: " " });
+            await parse.parse_command(visitor, { separator: [ " " ] });
     
             assert.deepEqual(visitor.command, command);
         });
@@ -68,7 +69,7 @@ describe("parse", async () => {
                 options: {}
             };
     
-            await parse.parse_command(visitor, { separator: " " });
+            await parse.parse_command(visitor, { separator: [ " " ] });
     
             assert.deepEqual(visitor.command, child_command);
         });
@@ -89,7 +90,7 @@ describe("parse", async () => {
                 options: {}
             };
     
-            await parse.parse_command(visitor, { separator: " " });
+            await parse.parse_command(visitor, { separator: [ " " ] });
     
             assert.deepEqual(visitor.command, child_command);
         });
@@ -112,7 +113,7 @@ describe("parse", async () => {
                 options: {}
             };
 
-            await parse.parse_option(visitor, { separator: " " });
+            await parse.parse_option(visitor, { separator: [ " " ] });
 
             assert.deepEqual(visitor.options.option, []);
         });
@@ -133,7 +134,7 @@ describe("parse", async () => {
                 options: {}
             };
 
-            await parse.parse_option(visitor, { separator: " " });
+            await parse.parse_option(visitor, { separator: [ " " ] });
 
             assert.deepEqual(visitor.options.option, []);
         });
@@ -157,7 +158,7 @@ describe("parse", async () => {
                 }
             };
 
-            await parse.parse_option(visitor, { separator: " " });
+            await parse.parse_option(visitor, { separator: [ " " ] });
 
             assert.equal(visitor.remaining, "excess");
         });
@@ -176,7 +177,7 @@ describe("parse", async () => {
             };
 
             try {
-                await parse.parse_option(visitor, { separator: " " });
+                await parse.parse_option(visitor, { separator: [ " " ] });
             } catch (error) {
                 if (error.name == "Fault") {
                     return;
@@ -205,7 +206,7 @@ describe("parse", async () => {
             };
 
             try {
-                await parse.parse_option(visitor, { separator: " " });
+                await parse.parse_option(visitor, { separator: [ " " ] });
             } catch (error) {
                 if (error.name == "Fault") {
                     return;
@@ -232,12 +233,13 @@ describe("parse", async () => {
                 options: {}
             };
 
-            await parse.parse_argument(visitor, { separator: " " });
+            await parse.parse_argument(visitor, { separator: [ " " ] });
 
             assert.deepEqual(visitor.arguments, [ "argument" ]);
         });
 
         it("Parses multiple command arguments", async () => {
+            console.log("meme")
             const command = parsnip.command("root")
                 .add_argument(parsnip.argument(new Type()).build())
                 .add_argument(parsnip.argument(new Type()).build())
@@ -250,7 +252,7 @@ describe("parse", async () => {
                 arguments: [],
                 options: {}
             };
-            const options = { separator: " " };
+            const options = { separator: [ " " ] };
 
             await parse.parse_argument(visitor, options);
             await parse.parse_argument(visitor, options);
@@ -276,7 +278,7 @@ describe("parse", async () => {
                 }
             };
 
-            await parse.parse_argument(visitor, { separator: " " });
+            await parse.parse_argument(visitor, { separator: [ " " ] });
 
             assert.deepEqual(visitor.options.option, [ "argument" ]);
         });
@@ -299,7 +301,7 @@ describe("parse", async () => {
                     option: []
                 }
             };
-            const options = { separator: " " };
+            const options = { separator: [ " " ] };
  
             await parse.parse_argument(visitor, options);
             await parse.parse_argument(visitor, options);

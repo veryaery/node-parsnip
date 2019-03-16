@@ -14,44 +14,44 @@ describe("NumberType", () => {
     describe("parse_input", () => {
 
         it("Parses base10 integer", () => {
-            assert.deepEqual((new NumberType(null, NumberType.default_options)).parse_input("1337", { separator: " " }).indexes, [ [ 1, 3, 3, 7 ], [] ]);
+            assert.deepEqual((new NumberType(null, NumberType.default_options)).parse_input("1337", { separator: [ " " ] }).indexes, [ [ 1, 3, 3, 7 ], [] ]);
         });
 
         it("Parses base12 integer", () => {
-            assert.deepEqual((new NumberType({ base: base12 }, NumberType.default_options)).parse_input("935", { separator: " " }).indexes, [ [ 9, 3, 5 ], [] ]);
+            assert.deepEqual((new NumberType({ base: base12 }, NumberType.default_options)).parse_input("935", { separator: [ " " ] }).indexes, [ [ 9, 3, 5 ], [] ]);
         });
 
         it("Parses base10 decimal", () => {
-            assert.deepEqual((new NumberType(null, NumberType.default_options)).parse_input("3.141592", { separator: " " }).indexes, [ [ 3 ], [ 1, 4, 1, 5, 9, 2 ] ]);
+            assert.deepEqual((new NumberType(null, NumberType.default_options)).parse_input("3.141592", { separator: [ " " ] }).indexes, [ [ 3 ], [ 1, 4, 1, 5, 9, 2 ] ]);
         });
 
         it("Parses base12 decimal", () => {
-            assert.deepEqual((new NumberType({ base: base12 }, NumberType.default_options)).parse_input("3.184809", { separator: " " }).indexes, [ [ 3 ], [ 1, 8, 4, 8, 0, 9 ] ]);
+            assert.deepEqual((new NumberType({ base: base12 }, NumberType.default_options)).parse_input("3.184809", { separator: [ " " ] }).indexes, [ [ 3 ], [ 1, 8, 4, 8, 0, 9 ] ]);
         });
 
         it("Returns remaining string after integer", () => {
-            assert.equal((new NumberType(null, NumberType.default_options)).parse_input("1337 after", { separator: " " }).remaining, " after");
+            assert.equal((new NumberType(null, NumberType.default_options)).parse_input("1337 after", { separator: [ " " ] }).remaining, " after");
         });
 
         it("Returns remaining string after decimal", () => {
-            assert.equal((new NumberType(null, NumberType.default_options)).parse_input("3.141592 after", { separator: " " }).remaining, " after");
+            assert.equal((new NumberType(null, NumberType.default_options)).parse_input("3.141592 after", { separator: [ " " ] }).remaining, " after");
         });
 
         it("Parses positive number", () => {
-            assert.equal((new NumberType(null, NumberType.default_options)).parse_input("1337", { separator: " " }).negative, false);
+            assert.equal((new NumberType(null, NumberType.default_options)).parse_input("1337", { separator: [ " " ] }).negative, false);
         });
 
         it("Parses negative number", () => {
-            assert.equal((new NumberType(null, NumberType.default_options)).parse_input("-1337", { separator: " " }).negative, true);
+            assert.equal((new NumberType(null, NumberType.default_options)).parse_input("-1337", { separator: [ " " ] }).negative, true);
         });
 
         it("Ignores ignore strings", () => {
-            assert.deepEqual((new NumberType(null, NumberType.default_options)).parse_input("1'337", { separator: " " }).indexes, [ [ 1, 3, 3, 7 ], [] ]);
+            assert.deepEqual((new NumberType(null, NumberType.default_options)).parse_input("1'337", { separator: [ " " ] }).indexes, [ [ 1, 3, 3, 7 ], [] ]);
         });
 
         it("Throws Fault if number string isn't followed by a separator", () => {
             try {
-                (new NumberType(null, NumberType.default_options)).parse_input("1337foo bar", { separator: " " })
+                (new NumberType(null, NumberType.default_options)).parse_input("1337foo bar", { separator: [ " " ] })
             } catch (error) {
                 if (error.name == "Fault") {
                     return;
@@ -63,7 +63,7 @@ describe("NumberType", () => {
 
         it("Throws Fault if number string doesn't contain any digits", () => {
             try {
-                (new NumberType(null, NumberType.default_options)).parse_input("-.", { separator: " " })
+                (new NumberType(null, NumberType.default_options)).parse_input("-.", { separator: [ " " ] })
             } catch (error) {
                 if (error.name == "Fault") {
                     return;

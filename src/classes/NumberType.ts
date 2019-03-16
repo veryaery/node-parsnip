@@ -9,18 +9,18 @@ import * as methods from "../lib/methods";
 
 export type NumberOptions = {
     base?: (string[])[],
-    decimal?: string | string[],
-    negative?: string | string[],
-    ignore?: string | string[],
+    decimal?: string[],
+    negative?: string[],
+    ignore?: string[],
     min?: number,
     max?: number
 }
 
 export type DefaultedNumberOptions = {
     base: (string[])[],
-    decimal: string | string[],
-    negative: string | string[],
-    ignore: string | string[],
+    decimal: string[],
+    negative: string[],
+    ignore: string[],
     min?: number,
     max?: number
 }
@@ -43,8 +43,8 @@ export abstract class NumberType<options extends NumberOptions, defaulted_option
             [ "9" ]
         ],
         decimal: [ ".", "," ],
-        negative: "-",
-        ignore: "'"
+        negative: [ "-" ],
+        ignore: [ "'" ]
     };
 
     options: defaulted_options;

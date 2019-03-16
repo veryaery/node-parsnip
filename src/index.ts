@@ -11,7 +11,7 @@ export type Options = {
 }
 
 const default_options: Options = {
-    separator: " "
+    separator: [ " " ]
 };
 
 export function argument(type: Type): ArgumentBuilder {

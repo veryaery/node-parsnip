@@ -5,15 +5,15 @@ import { Fault } from "../classes/Fault";
 import * as methods from "../lib/methods";
 
 export type StringOptions = {
-    quotation?: string | string[],
-    escape?: string | string[],
+    quotation?: string[],
+    escape?: string[],
     min?: number,
     max?: number
 }
 
 type DefaultedStringOptions = {
-    quotation: string | string[],
-    escape: string | string[],
+    quotation: string[],
+    escape: string[],
     min?: number,
     max?: number
 }
@@ -28,7 +28,7 @@ export class StringType implements Type {
     
     static default_options: StringOptions = {
         quotation: [ "\"", "'" ],
-        escape: "\\"
+        escape: [ "\\" ]
     };
 
     options: DefaultedStringOptions;

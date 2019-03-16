@@ -7,22 +7,14 @@ describe("methods", () => {
 
     describe("starts_with", () => {
 
-        it("Returns match string", () => {
-            assert.equal(methods.starts_with("foobar", "foo"), "foo");
-        });
-
-        it("Returns null if didn't match", () => {
-            assert.equal(methods.starts_with("barfoo", "foo"), null);
-        });
-
-        it("Returns matched string of any of array", () => {
+        it("Returns matched string", () => {
             assert.equal(methods.starts_with("barfoo", [
                 "foo",
                 "bar"
             ]), "bar");
         });
 
-        it("Returns null if it didn't match any of array", () => {
+        it("Returns null if it couldn't match", () => {
             assert.equal(methods.starts_with("apabapa", [
                 "foo",
                 "bar"
@@ -34,28 +26,20 @@ describe("methods", () => {
     describe("trim_start", () => {
 
         it("Trims separator", () => {
-            assert.equal(methods.trim_start(" trim", " "), "trim");
-        });
-
-        it("Trims multiple of separator", () => {
-            assert.equal(methods.trim_start("   trim", " "), "trim");
-        });
-
-        it("Trims any separator of array", () => {
             assert.equal(methods.trim_start("bartrim", [
                 "foo",
                 "bar"
             ]), "trim");
         });
 
-        it("Trims multiple separators of array", () => {
+        it("Trims multiple separators", () => {
             assert.equal(methods.trim_start("foobartrim", [
                 "foo",
                 "bar"
             ]), "trim");
         });
 
-        it("Trims multiple of multiple separators of array", () => {
+        it("Trims multiple of multiple separators", () => {
             assert.equal(methods.trim_start("foofoobarfoobartrim", [
                 "foo",
                 "bar"
@@ -66,23 +50,19 @@ describe("methods", () => {
 
     describe("before", () => {
 
-        it("Returns string before separator", () => {
-            assert.equal(methods.before("before after", " "), "before");
-        });
-
-        it("Returns string before any separator of array", () => {
+        it("Returns string before any separator", () => {
             assert.equal(methods.before("beforebar", [ "foo", "bar" ]), "before");
         });
 
         it("Returns entire string if it doesn't contain separator", () => {
-            assert.equal(methods.before("entire string", "separator"), "entire string");
+            assert.equal(methods.before("entire string", [ "foo", "bar" ]), "entire string");
         });
 
     });
 
     describe("match_array", () => {
         
-        it("Returns matched Option of any of array", () => {
+        it("Returns matched Option", () => {
             const match = parsnip.option("bar").build();
 
             assert.equal(methods.match_array("bar", [
@@ -91,7 +71,7 @@ describe("methods", () => {
             ]), match);
         });
 
-        it("Returns matched Option by alias of any of array", () => {
+        it("Returns matched Option by alias", () => {
             const match = parsnip.option("apa")
                 .add_alias("bapa")
                 .build();
@@ -104,7 +84,7 @@ describe("methods", () => {
             ]), match);
         });
 
-        it("Returns null if it didn't match any of array", () => {
+        it("Returns null if it couldn't match", () => {
             assert.equal(methods.match_array("apa", [
                 parsnip.option("foo").build(),
                 parsnip.option("bar").build()
@@ -115,7 +95,7 @@ describe("methods", () => {
     
     describe("match_object", () => {
 
-        it("Returns matched Option of any in object", () => {
+        it("Returns matched Option", () => {
             const match = parsnip.option("bapa").build();
 
             assert.equal(methods.match_object("barbapa", {
@@ -124,7 +104,7 @@ describe("methods", () => {
             }), match);
         });
 
-        it("Returns matched Option by alias of any in object", () => {
+        it("Returns matched Option by alias", () => {
             const match = parsnip.option("b")
                 .add_alias("c")
                 .build();
@@ -139,7 +119,7 @@ describe("methods", () => {
             }), match);
         });
 
-        it("Returns null if it didn't match any in object", () => {
+        it("Returns null if it couldn't matcht", () => {
             assert.equal(methods.match_object("null", {
                 "foo": [ parsnip.option("apa").build() ],
                 "bar": [ parsnip.option("bapa").build() ]

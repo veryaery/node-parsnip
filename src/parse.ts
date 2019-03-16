@@ -4,7 +4,7 @@ import { Fault } from "./classes/Fault";
 import * as methods from "./lib/methods";
 
 export type DefaultedOptions = {
-    separator: string | string[]
+    separator: string[]
 }
 
 export type Argument = {
@@ -39,21 +39,6 @@ function next_argument_i(visitor: Visitor): number {
     } else {
         return visitor.options[visitor.target.name].length;
     }
-}
-
-
-function shortest(input: string[]): string {
-    let output: string = input[0];
-
-    for (let i = 1; i < input.length; i++) {
-        const current_input = input[i];
-
-        if (current_input.length > output.length) {
-            output = current_input;
-        }
-    }
-
-    return output;
 }
 
 export async function parse_argument(visitor: Visitor, options: DefaultedOptions): Promise<void> {
@@ -163,7 +148,7 @@ export async function parse_option(visitor: Visitor, options: DefaultedOptions):
             const next: Argument = visitor.target.arguments[i];
     
             if (!next.optional) {
-                const shortest_separator_length: number = typeof options.separator == "string" ? options.separator.length : shortest(<string[]>options.separator).length;
+                const shortest_separator_length: number = options.separator.reduce((previous, current) => current.length > previous.length ? current : previous, "").length;
                 const from: number = visitor.input.length + shortest_separator_length;
                 throw new Fault({ argument: next }, properties => `Argument ${properties.argument.name} is required`, from, from + 1);
             }
