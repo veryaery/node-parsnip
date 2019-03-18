@@ -196,7 +196,7 @@ describe("parse", async () => {
                 .build();
             const visitor = {
                 input: "--option",
-                remaining: "",
+                remaining: "--option",
                 command: command,
                 target: option,
                 arguments: [],
@@ -214,6 +214,59 @@ describe("parse", async () => {
             }
 
             throw new Error();
+        });
+
+        it("Cancels option argument parsing", async () => {
+            const canceled = parsnip.option("canceled")
+                .add_argument(parsnip.argument(new Type())
+                    .set_optional(true)
+                    .build()
+                )
+                .build();
+            const canceling = parsnip.option("canceling")
+                .add_argument(parsnip.argument(new Type()).build())
+                .build();
+            const command = parsnip.command("root")
+                .add_option("--", canceled)
+                .add_option("--", canceling)
+                .build();
+            const visitor = {
+                input: "--canceled --canceling argument",
+                remaining: "--canceling argument",
+                command: command,
+                target: canceled,
+                arguments: [],
+                options: {
+                    canceled: [],
+                    canceling: []
+                } 
+            };
+
+            await parse.parse_option(visitor, { separator: [ " " ]});
+
+            assert.deepEqual(visitor.options.canceled, []);
+        });
+
+        it("Continues command argument parsing", async () => {
+            const option = parsnip.option("option").build();
+            const command = parsnip.command("root")
+                .add_argument(parsnip.argument(new Type()).build())
+                .add_option("--", option)
+                .build();
+            const visitor = {
+                input: "--option argument",
+                remaining: "--option argument",
+                command: command,
+                target: command,
+                arguments: [],
+                options: {
+                    option: []
+                }
+            };
+
+            await parse.parse_option(visitor, { separator: [ " " ]});
+
+            assert.deepEqual(visitor.arguments, [ "argument" ]);
         });
 
     });
@@ -239,7 +292,6 @@ describe("parse", async () => {
         });
 
         it("Parses multiple command arguments", async () => {
-            console.log("meme")
             const command = parsnip.command("root")
                 .add_argument(parsnip.argument(new Type()).build())
                 .add_argument(parsnip.argument(new Type()).build())
