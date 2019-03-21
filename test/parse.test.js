@@ -2,35 +2,17 @@ const assert = require("assert");
 
 const parsnip = require("../compiled/index.js");
 const parse = require("../compiled/parse.js");
+const methods = require("../compiled/lib/methods.js");
 
 class Type {
 
     parse(input, options) {
-        let remaining = input;
-        let output = "";
-
-        while (remaining.length > 0) {
-            let break_while = false;
-
-            for (const separator of options.separator) {
-                if (remaining.startsWith(separator)) {
-                    break_while = true;
-                    break;
-                }
-            }
-
-            if (break_while) {
-                break;
-            }
-
-            output += remaining.slice(0, 1);
-            remaining = remaining.slice(1, remaining.length);
-        }
+        const before = methods.before(input, options.separator);
 
         return {
-            output,
-            remaining
-        }
+            output: before,
+            remaining: input.slice(before.length, input.length)
+        };
     }
 
 }
@@ -267,6 +249,49 @@ describe("parse", async () => {
             await parse.parse_option(visitor, { separator: [ " " ]});
 
             assert.deepEqual(visitor.arguments, [ "argument" ]);
+        });
+
+        it("Continues parsing though optional command argument wasn't supplied", async () => {
+            const command = parsnip.command("root")
+                .add_argument(parsnip.argument(new Type()).build())
+                .add_argument(parsnip.argument(new Type())
+                    .set_optional(true)
+                    .build()
+                )
+                .build();
+            const visitor = {
+                input: "argument",
+                remaining: "argument",
+                command: command,
+                target: command,
+                arguments: [],
+                options: {}
+            };
+
+            await parse.parse_option(visitor, { separator: [ " " ]});
+        });
+
+        it("Continues parsing though optional option argument wasn't supplied", async () => {
+            const option = parsnip.option("option")
+                .add_argument(parsnip.argument(new Type()).build())
+                .add_argument(parsnip.argument(new Type())
+                    .set_optional(true)
+                    .build()
+                )
+                .build();
+            const command = parsnip.command("root")
+                .add_option("--", option)
+                .build();
+            const visitor = {
+                input: "--option argument",
+                remaining: "--option argument",
+                command: command,
+                target: option,
+                arguments: [],
+                options: {}
+            };
+
+            await parse.parse_option(visitor, { separator: [ " " ]});
         });
 
     });

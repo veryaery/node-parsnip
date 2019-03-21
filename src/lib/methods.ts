@@ -10,9 +10,9 @@ export function starts_with(input: string, matches: string[]): string {
     return null;
 }
 
-export function trim_start(input: string, separators: string[]): string {
+export function trim_start(input: string, separator: string[]): string {
     while (input.length > 0) {
-        const starts_with_separator: string = starts_with(input, separators);
+        const starts_with_separator: string = starts_with(input, separator);
 
         if (starts_with_separator) {
             input = input.slice(starts_with_separator.length, input.length);
@@ -24,11 +24,11 @@ export function trim_start(input: string, separators: string[]): string {
     return input;
 }
 
-export function before(input: string, separators: string[]): string {
+export function before(input: string, separator: string[]): string {
     let before: string = "";
 
     while (input.length > 0) {
-        const starts_with_separator: string = starts_with(input, separators);
+        const starts_with_separator: string = starts_with(input, separator);
 
         if (starts_with_separator) {
             break;
