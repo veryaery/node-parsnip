@@ -56,27 +56,6 @@ describe("parse", async () => {
             assert.deepEqual(visitor.command, child_command);
         });
 
-        it("Parses command by alias", async () => {
-            const child_command = parsnip.command("child")
-                .add_alias("offspring")
-                .build();
-            const command = parsnip.command("root")
-                .add_command("", child_command)
-                .build();
-            const visitor = {
-                input: "offspring",
-                remaining: "offspring",
-                command: command,
-                target: command,
-                arguments: [],
-                options: {}
-            };
-    
-            await parse.parse_command(visitor, { separator: [ " " ] });
-    
-            assert.deepEqual(visitor.command, child_command);
-        });
-
     });
 
     describe("parse_option", () => {
@@ -89,27 +68,6 @@ describe("parse", async () => {
             const visitor = {
                 input: "--option",
                 remaining: "--option",
-                command: command,
-                target: command,
-                arguments: [],
-                options: {}
-            };
-
-            await parse.parse_option(visitor, { separator: [ " " ] });
-
-            assert.deepEqual(visitor.options.option, []);
-        });
-
-        it("Parses option by alias", async () => {
-            const option = parsnip.option("option")
-                .add_alias("choice")
-                .build();
-            const command = parsnip.command("root")
-                .add_option("--", option)
-                .build();
-            const visitor = {
-                input: "--choice",
-                remaining: "--choice",
                 command: command,
                 target: command,
                 arguments: [],
