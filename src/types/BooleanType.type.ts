@@ -49,7 +49,7 @@ export class BooleanType implements Type {
             };
         }
 
-        throw new Fault(null, () => "Invalid value", 0, methods.before(input, options.separator).length);
+        throw new Fault(null, () => "Invalid value", 0, input.length);
     }
 
 }
