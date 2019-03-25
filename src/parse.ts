@@ -41,6 +41,8 @@ function next_argument_i(visitor: Visitor): number {
     }
 }
 
+// TODO: "prefix option objects"
+
 export async function parse_argument(visitor: Visitor, options: DefaultedOptions): Promise<void> {
     const i: number = next_argument_i(visitor);
     const next: Argument = visitor.target.arguments[i];

@@ -2,20 +2,8 @@ const assert = require("assert");
 
 const parsnip = require("../compiled/index.js");
 const parse = require("../compiled/parse.js");
-const methods = require("../compiled/lib/methods.js");
 
-class Type {
-
-    parse(input, options) {
-        const before = methods.before(input, options.separator);
-
-        return {
-            output: before,
-            remaining: input.slice(before.length, input.length)
-        };
-    }
-
-}
+const { Type } = require("./Type.js");
 
 describe("parse", async () => {
 
