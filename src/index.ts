@@ -30,29 +30,13 @@ const default_options: Options = {
     separator: [ " " ]
 };
 
-function argument_object(target: Option, values: any[]): {} {
-    const output: {} = {};
-
-    for (let i: number = 0; i < values.length; i++) {
-        const value: any = values[i];
-        const argument: Argument = target.arguments[i];
-
-        output[i] = value;
-
-        if (argument.name) {
-            output[argument.name] = value;
-        }
-    }
-    
-    return output;
-}
-
 export async function parse(input: string, command: Command, options?: Options): Promise<ParseReturnObject> {
     const visitor: Visitor = {
         input,
         remaining: input,
         command,
         target: command,
+        prefix: "",
         arguments: [],
         options: {}
     };
@@ -64,19 +48,11 @@ export async function parse(input: string, command: Command, options?: Options):
         throw error;
     }
 
-    const output: ParseReturnObject = {
+    return {
         command: visitor.command,
-        arguments: argument_object(visitor.command, visitor.arguments),
-        options: {}
+        arguments: visitor.arguments,
+        options: visitor.options
     };
-
-    for (const option_name in visitor.options) {
-        const option: Options = vis
-        const option_arguments: Argument[] = visitor.options[option_name];
-        output.options[option_name] = argument_object(option_arguments);
-    }
-
-    return output;
 }
 
 export function argument(type: Type): ArgumentBuilder {

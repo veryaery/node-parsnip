@@ -1,5 +1,10 @@
 import { Option } from "../parse";
 
+export type MatchObjectReturnObject = {
+    prefix: string,
+    match: Option
+}
+
 export function starts_with(input: string, matches: string[]): string {
     for (const match of matches) {
         if (input.startsWith(match)) {
@@ -58,7 +63,7 @@ export function match_array(input: string, matches: Option[]): Option {
     return null;
 }
 
-export function match_object(input: string, matches: object): Option {
+export function match_object(input: string, matches: object): MatchObjectReturnObject {
     for (const prefix in matches) {
         const options: Option[] = matches[prefix];
 
@@ -67,12 +72,18 @@ export function match_object(input: string, matches: object): Option {
 
             for (const option of options) {
                 if (trimmed_input == option.name) {
-                    return option;
+                    return {
+                        prefix,
+                        match: option
+                    };
                 } else if (option.aliases) {
                     // Try to match Option's aliases if it has any
                     for (const alias of option.aliases) {
                         if (trimmed_input == alias) {
-                            return option;
+                            return {
+                                prefix,
+                                match: option
+                            };
                         }
                     }
                 }
@@ -80,7 +91,10 @@ export function match_object(input: string, matches: object): Option {
         }
     }
 
-    return null;
+    return {
+        prefix: null,
+        match: null
+    };
 }
 
 export function default_properties(object: object, default_object: object): object {

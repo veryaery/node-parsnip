@@ -29,22 +29,27 @@ export type Visitor = {
     remaining: string,
     command: Command,
     target: Option,
-    arguments: any[],
+    prefix: string,
+    arguments: {},
     options: {}
 }
 
-function next_argument_i(visitor: Visitor): number {
-    if (visitor.target == visitor.command) {
-        return visitor.arguments.length;
+function arguments_length(visitor: Visitor, target: string): number {
+    const visitor_target: Option = visitor[target];
+
+    if (visitor_target == visitor.command) {
+        return Object.keys(visitor.arguments).length / 2;
     } else {
-        return visitor.options[visitor.target.name].length;
+        if (visitor.command.options instanceof Array) {
+            return Object.keys(visitor.options[visitor_target.name]).length / 2;
+        } else {
+            return Object.keys(visitor.options[visitor.prefix][visitor_target.name]).length / 2;
+        }
     }
 }
 
-// TODO: "prefix option objects"
-
 export async function parse_argument(visitor: Visitor, options: DefaultedOptions): Promise<void> {
-    const i: number = next_argument_i(visitor);
+    const i: number = arguments_length(visitor, "target");
     const next: Argument = visitor.target.arguments[i];
 
     let result: TypeReturnObject | Promise<TypeReturnObject>;
@@ -69,11 +74,20 @@ export async function parse_argument(visitor: Visitor, options: DefaultedOptions
 
     visitor.remaining = methods.trim_start(result.remaining, options.separator);
 
+    let arguments_object: {};
+
     if (visitor.target == visitor.command) {
-        visitor.arguments[i] = result.output;
+        arguments_object = visitor.arguments;
     } else {
-        visitor.options[visitor.target.name][i] = result.output;
+        if (visitor.command.options instanceof Array) {
+            arguments_object = visitor.options[visitor.target.name];
+        } else {
+            arguments_object = visitor.options[visitor.prefix][visitor.target.name];
+        }
     }
+
+    arguments_object[i] = result.output;
+    arguments_object[visitor.target.name] = result.output;
 }
 
 export async function parse_option(visitor: Visitor, options: DefaultedOptions): Promise<void> {
@@ -87,7 +101,15 @@ export async function parse_option(visitor: Visitor, options: DefaultedOptions):
             if (visitor.command.options instanceof Array) {
                 match = methods.match_array(before, visitor.command.options);
             } else {
-                match = methods.match_object(before, visitor.command.options);
+                const result: methods.MatchObjectReturnObject = methods.match_object(before, visitor.command.options);
+
+                visitor.prefix = result.prefix;
+                
+                if (!visitor.options[result.prefix]) {
+                    visitor.options[result.prefix] = {};
+                }
+
+                match = result.match;
             }
     
             if (match) {
@@ -96,7 +118,16 @@ export async function parse_option(visitor: Visitor, options: DefaultedOptions):
                 // If there was a match, parse that option instead
                 visitor.remaining = methods.trim_start(visitor.remaining.slice(before.length, visitor.remaining.length), options.separator);
                 visitor.target = match;
-                visitor.options[visitor.target.name] = [];
+
+                if (visitor.command.options instanceof Array) {
+                    if (!visitor.options[match.name]) {
+                        visitor.options[match.name] = {};
+                    }
+                } else {
+                    if (!visitor.options[visitor.prefix][match.name]) {
+                        visitor.options[visitor.prefix][match.name] = {};
+                    }
+                }
     
                 try {
                     await parse_option(visitor, options);
@@ -117,19 +148,17 @@ export async function parse_option(visitor: Visitor, options: DefaultedOptions):
         }
 
         if (visitor.target.arguments) {
+            const command_done: boolean = !visitor.command.arguments || arguments_length(visitor, "command") == visitor.target.arguments.length;
+
             // Break parsing once both command's and target's parsing is done
             if (visitor.target == visitor.command) {
-                if (visitor.arguments.length == visitor.target.arguments.length) {
+                if (command_done) {
                     break;
                 }
             } else {
-                if (
-                    (
-                        visitor.command.arguments &&
-                        visitor.arguments.length == visitor.command.arguments.length &&
-                        visitor.options[visitor.target.name].length == visitor.target.arguments.length
-                    ) || (visitor.options[visitor.target.name].length == visitor.target.arguments.length)
-                ) {
+                const option_done: boolean = !visitor.target.arguments || arguments_length(visitor, "target") == visitor.target.arguments.length;
+
+                if ((command_done && option_done) || option_done) {
                     break;
                 }
             }
@@ -144,7 +173,7 @@ export async function parse_option(visitor: Visitor, options: DefaultedOptions):
 
     if (visitor.target.arguments) {
         // Make sure all required arguments were parsed
-        const i: number = next_argument_i(visitor);
+        const i: number = arguments_length(visitor, "target");
     
         if (i < visitor.target.arguments.length) {
             const next: Argument = visitor.target.arguments[i];
@@ -168,7 +197,7 @@ export async function parse_command(visitor: Visitor, options: DefaultedOptions)
         if (visitor.command.commands instanceof Array) {
             match = <Command>methods.match_array(before, visitor.command.commands);
         } else {
-            match = <Command>methods.match_object(before, visitor.command.commands);
+            match = <Command>methods.match_object(before, visitor.command.commands).match;
         }
     
         if (match) {
