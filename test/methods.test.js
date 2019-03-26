@@ -95,13 +95,20 @@ describe("methods", () => {
     
     describe("match_object", () => {
 
+        it("Returns matched prefix", () => {
+            assert.equal(methods.match_object("apabapa", {
+                "foo": [ parsnip.option("bar").build() ],
+                "apa": [ parsnip.option("bapa").build() ]
+            }).prefix, "apa");
+        });
+
         it("Returns matched Option", () => {
             const match = parsnip.option("bapa").build();
 
-            assert.equal(methods.match_object("barbapa", {
-                "foo": [ parsnip.option("apa").build() ],
-                "bar": [ match ]
-            }), match);
+            assert.equal(methods.match_object("apabapa", {
+                "foo": [ parsnip.option("bar").build() ],
+                "apa": [ match ]
+            }).match, match);
         });
 
         it("Returns matched Option by alias", () => {
@@ -116,14 +123,17 @@ describe("methods", () => {
                         .build() 
                 ],
                 "a": [ match ]
-            }), match);
+            }).match, match);
         });
 
-        it("Returns null if it couldn't matcht", () => {
-            assert.equal(methods.match_object("null", {
+        it("Returns nulled values if it couldn't match", () => {
+            assert.deepEqual(methods.match_object("null", {
                 "foo": [ parsnip.option("apa").build() ],
                 "bar": [ parsnip.option("bapa").build() ]
-            }), null);
+            }), {
+                prefix: null,
+                match: null
+            });
         });
 
     });

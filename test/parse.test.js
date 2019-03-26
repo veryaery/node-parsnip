@@ -5,6 +5,8 @@ const parse = require("../compiled/parse.js");
 
 const { Type } = require("./Type.js");
 
+const options = { separator: [ " " ]};
+
 describe("parse", async () => {
 
     describe("parse_command", () => {
@@ -16,11 +18,12 @@ describe("parse", async () => {
                 remaining: "",
                 command: command,
                 target: command,
-                arguments: [],
+                prefix: "",
+                arguments: {},
                 options: {}
             };
     
-            await parse.parse_command(visitor, { separator: [ " " ] });
+            await parse.parse_command(visitor, options);
     
             assert.deepEqual(visitor.command, command);
         });
@@ -35,11 +38,12 @@ describe("parse", async () => {
                 remaining: "child",
                 command: command,
                 target: command,
-                arguments: [],
+                prefix: "",
+                arguments: {},
                 options: {}
             };
     
-            await parse.parse_command(visitor, { separator: [ " " ] });
+            await parse.parse_command(visitor, options);
     
             assert.deepEqual(visitor.command, child_command);
         });
@@ -48,7 +52,27 @@ describe("parse", async () => {
 
     describe("parse_option", () => {
 
-        it("Parses option", async () => {
+        it("Parses option in array", async () => {
+            const option = parsnip.option("option").build();
+            const command = parsnip.command("root")
+                .set_options([ option ])
+                .build();
+            const visitor = {
+                input: "option",
+                remaining: "option",
+                command: command,
+                target: command,
+                prefix: "",
+                arguments: {},
+                options: {}
+            };
+
+            await parse.parse_option(visitor, options);
+
+            assert.deepEqual(visitor.options["option"], {});
+        });
+
+        it("Parses option in object", async () => {
             const option = parsnip.option("option").build();
             const command = parsnip.command("root")
                 .add_option("--", option)
@@ -58,13 +82,14 @@ describe("parse", async () => {
                 remaining: "--option",
                 command: command,
                 target: command,
-                arguments: [],
+                prefix: "",
+                arguments: {},
                 options: {}
             };
 
-            await parse.parse_option(visitor, { separator: [ " " ] });
+            await parse.parse_option(visitor, options);
 
-            assert.deepEqual(visitor.options.option, []);
+            assert.deepEqual(visitor.options["--"]["option"], {});
         });
 
         it("Breaks parsing once both command's and target's parsing is done", async () => {
@@ -80,13 +105,20 @@ describe("parse", async () => {
                 remaining: "excess",
                 command: command,
                 target: option,
-                arguments: [ "foo" ],
+                prefix: "--",
+                arguments: {
+                    0: "foo"
+                },
                 options: {
-                    option: [ "bar" ]
+                    "--": {
+                        option: {
+                            0: "bar"
+                        }
+                    }
                 }
             };
 
-            await parse.parse_option(visitor, { separator: [ " " ] });
+            await parse.parse_option(visitor, options);
 
             assert.equal(visitor.remaining, "excess");
         });
@@ -100,12 +132,13 @@ describe("parse", async () => {
                 remaining: "",
                 command: command,
                 target: command,
-                arguments: [],
+                prefix: "",
+                arguments: {},
                 options: {}
             };
 
             try {
-                await parse.parse_option(visitor, { separator: [ " " ] });
+                await parse.parse_option(visitor, options);
             } catch (error) {
                 if (error.name == "Fault") {
                     return;
@@ -127,14 +160,13 @@ describe("parse", async () => {
                 remaining: "--option",
                 command: command,
                 target: option,
-                arguments: [],
-                options: {
-                    option: []
-                }
+                prefix: "",
+                arguments: {},
+                options: {}
             };
 
             try {
-                await parse.parse_option(visitor, { separator: [ " " ] });
+                await parse.parse_option(visitor, options);
             } catch (error) {
                 if (error.name == "Fault") {
                     return;
@@ -163,16 +195,18 @@ describe("parse", async () => {
                 remaining: "--canceling argument",
                 command: command,
                 target: canceled,
-                arguments: [],
+                prefix: "--",
+                arguments: {},
                 options: {
-                    canceled: [],
-                    canceling: []
+                    "--": {
+                        canceled: {}
+                    }
                 } 
             };
 
-            await parse.parse_option(visitor, { separator: [ " " ]});
+            await parse.parse_option(visitor, options);
 
-            assert.deepEqual(visitor.options.canceled, []);
+            assert.deepEqual(visitor.options["--"]["canceled"], {});
         });
 
         it("Continues command argument parsing", async () => {
@@ -186,15 +220,18 @@ describe("parse", async () => {
                 remaining: "--option argument",
                 command: command,
                 target: command,
-                arguments: [],
+                prefix: "--",
+                arguments: {},
                 options: {
-                    option: []
+                    "--": {
+                        option: {}
+                    }
                 }
             };
 
-            await parse.parse_option(visitor, { separator: [ " " ]});
+            await parse.parse_option(visitor, options);
 
-            assert.deepEqual(visitor.arguments, [ "argument" ]);
+            assert.deepEqual(visitor.arguments, { 0: "argument" });
         });
 
         it("Continues parsing though optional command argument wasn't supplied", async () => {
@@ -210,11 +247,12 @@ describe("parse", async () => {
                 remaining: "argument",
                 command: command,
                 target: command,
-                arguments: [],
+                prefix: "",
+                arguments: {},
                 options: {}
             };
 
-            await parse.parse_option(visitor, { separator: [ " " ]});
+            await parse.parse_option(visitor, options);
         });
 
         it("Continues parsing though optional option argument wasn't supplied", async () => {
@@ -233,33 +271,62 @@ describe("parse", async () => {
                 remaining: "--option argument",
                 command: command,
                 target: option,
-                arguments: [],
+                prefix: "",
+                arguments: {},
                 options: {}
             };
 
-            await parse.parse_option(visitor, { separator: [ " " ]});
+            await parse.parse_option(visitor, options);
         });
 
     });
 
     describe("parse_argument", () => {
 
+        // TODO: arguments with name parse tests
+
         it("Parses command argument", async () => {
             const command = parsnip.command("root")
-                .add_argument(parsnip.argument(new Type()))
+                .add_argument(parsnip.argument(new Type()).build())
                 .build();
             const visitor = {
                 input: "argument",
                 remaining: "argument",
                 command: command,
                 target: command,
-                arguments: [],
+                prefix: "",
+                arguments: {},
                 options: {}
             };
 
-            await parse.parse_argument(visitor, { separator: [ " " ] });
+            await parse.parse_argument(visitor, options);
 
-            assert.deepEqual(visitor.arguments, [ "argument" ]);
+            assert.deepEqual(visitor.arguments, { 0: "argument" });
+        });
+
+        it("Parses command argument with name", async () => {
+            const command = parsnip.command("root")
+                .add_argument(parsnip.argument(new Type())
+                    .set_name("argument")
+                    .build()
+                )
+                .build();
+            const visitor = {
+                input: "argument",
+                remaining: "argument",
+                command: command,
+                target: command,
+                prefix: "",
+                arguments: {},
+                options: {}
+            };
+
+            await parse.parse_argument(visitor, options);
+
+            assert.deepEqual(visitor.arguments, {
+                0: "argument",
+                argument: "argument"
+            });
         });
 
         it("Parses multiple command arguments", async () => {
@@ -272,15 +339,50 @@ describe("parse", async () => {
                 remaining: "foo bar",
                 command: command,
                 target: command,
-                arguments: [],
+                prefix: "",
+                arguments: {},
                 options: {}
             };
-            const options = { separator: [ " " ] };
 
             await parse.parse_argument(visitor, options);
             await parse.parse_argument(visitor, options);
 
-            assert.deepEqual(visitor.arguments, [ "foo", "bar" ]);
+            assert.deepEqual(visitor.arguments, {
+                0: "foo",
+                1: "bar"
+            });
+        });
+
+        it("Parses multiple command arguments with names", async () => {
+            const command = parsnip.command("root")
+                .add_argument(parsnip.argument(new Type())
+                    .set_name("foo")
+                    .build()
+                )
+                .add_argument(parsnip.argument(new Type())
+                    .set_name("apa")
+                    .build()
+                )
+                .build();
+            const visitor = {
+                input: "bar bapa",
+                remaining: "bar bapa",
+                command: command,
+                target: command,
+                prefix: "",
+                arguments: {},
+                options: {}
+            };
+
+            await parse.parse_argument(visitor, options);
+            await parse.parse_argument(visitor, options);
+
+            assert.deepEqual(visitor.arguments, {
+                0: "bar",
+                foo: "bar",
+                1: "bapa",
+                apa: "bapa"
+            });
         });
 
         it("Parses option argument", async () => {
@@ -295,15 +397,50 @@ describe("parse", async () => {
                 remaining: "argument",
                 command: command,
                 target: option,
-                arguments: [],
+                prefix: "--",
+                arguments: {},
                 options: {
-                    option: []
+                    "--": {
+                        option: {}
+                    }
                 }
             };
 
-            await parse.parse_argument(visitor, { separator: [ " " ] });
+            await parse.parse_argument(visitor, options);
 
-            assert.deepEqual(visitor.options.option, [ "argument" ]);
+            assert.deepEqual(visitor.options["--"]["option"], { 0: "argument" });
+        });
+
+        it("Parses option argument with name", async () => {
+            const option = parsnip.option("option")
+                .add_argument(parsnip.argument(new Type())
+                    .set_name("argument")
+                    .build()
+                )
+                .build();
+            const command = parsnip.command("root")
+                .add_option("--", option)
+                .build();
+            const visitor = {
+                input: "--option argument",
+                remaining: "argument",
+                command: command,
+                target: option,
+                prefix: "--",
+                arguments: {},
+                options: {
+                    "--": {
+                        option: {}
+                    }
+                }
+            };
+
+            await parse.parse_argument(visitor, options);
+
+            assert.deepEqual(visitor.options["--"]["option"], {
+                0: "argument",
+                argument: "argument"
+            });
         });
 
         it("Parses multiple option arguments", async () => {
@@ -319,17 +456,61 @@ describe("parse", async () => {
                 remaining: "foo bar",
                 command: command,
                 target: option,
-                arguments: [],
+                prefix: "--",
+                arguments: {},
                 options: {
-                    option: []
+                    "--": {
+                        option: {}
+                    }
                 }
             };
-            const options = { separator: [ " " ] };
  
             await parse.parse_argument(visitor, options);
             await parse.parse_argument(visitor, options);
 
-            assert.deepEqual(visitor.options.option, [ "foo", "bar" ]);
+            assert.deepEqual(visitor.options["--"]["option"], {
+                0: "foo", 
+                1: "bar"
+            });
+        });
+
+        it("Parses multiple option arguments", async () => {
+            const option = parsnip.option("option")
+                .add_argument(parsnip.argument(new Type())
+                    .set_name("foo")
+                    .build()
+                )
+                .add_argument(parsnip.argument(new Type())
+                    .set_name("apa")
+                    .build()
+                )
+                .build();
+            const command = parsnip.command("root")
+                .add_option("--", option)
+                .build();
+            const visitor = {
+                input: "--option bar bapa",
+                remaining: "bar bapa",
+                command: command,
+                target: option,
+                prefix: "--",
+                arguments: {},
+                options: {
+                    "--": {
+                        option: {}
+                    }
+                }
+            };
+ 
+            await parse.parse_argument(visitor, options);
+            await parse.parse_argument(visitor, options);
+
+            assert.deepEqual(visitor.options["--"]["option"], {
+                0: "bar",
+                foo: "bar", 
+                1: "bapa",
+                apa: "bapa"
+            });
         });
 
     });

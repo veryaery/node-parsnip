@@ -4,7 +4,7 @@ const parsnip = require("../compiled/index.js");
 
 const { Type } = require("./Type.js");
 
-describe.only("index", () => {
+describe("index", () => {
 
     describe("parse", () => {
        

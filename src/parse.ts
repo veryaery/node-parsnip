@@ -37,15 +37,35 @@ export type Visitor = {
 function arguments_length(visitor: Visitor, target: string): number {
     const visitor_target: Option = visitor[target];
 
+    let target_arguments: {};
+
     if (visitor_target == visitor.command) {
-        return Object.keys(visitor.arguments).length / 2;
+        target_arguments = visitor.arguments;
     } else {
         if (visitor.command.options instanceof Array) {
-            return Object.keys(visitor.options[visitor_target.name]).length / 2;
+            target_arguments = visitor.options[visitor_target.name];
         } else {
-            return Object.keys(visitor.options[visitor.prefix][visitor_target.name]).length / 2;
+            target_arguments = visitor.options[visitor.prefix][visitor_target.name];
         }
     }
+
+    let length: number = 0;
+
+    for (let i: number = 0; i < Object.keys(target_arguments).length; i++) {
+        const argument: Argument = visitor_target.arguments[length];
+
+        if (!argument) {
+            break;
+        }
+
+        if (argument.name) {
+            i++;
+        }
+
+        length++;
+    }
+
+    return length;
 }
 
 export async function parse_argument(visitor: Visitor, options: DefaultedOptions): Promise<void> {
@@ -87,7 +107,10 @@ export async function parse_argument(visitor: Visitor, options: DefaultedOptions
     }
 
     arguments_object[i] = result.output;
-    arguments_object[visitor.target.name] = result.output;
+
+    if (next.name){
+        arguments_object[next.name] = result.output;
+    }
 }
 
 export async function parse_option(visitor: Visitor, options: DefaultedOptions): Promise<void> {
@@ -103,13 +126,15 @@ export async function parse_option(visitor: Visitor, options: DefaultedOptions):
             } else {
                 const result: methods.MatchObjectReturnObject = methods.match_object(before, visitor.command.options);
 
-                visitor.prefix = result.prefix;
-                
-                if (!visitor.options[result.prefix]) {
-                    visitor.options[result.prefix] = {};
-                }
-
                 match = result.match;
+
+                if (match) {
+                    visitor.prefix = result.prefix;
+                    
+                    if (!visitor.options[result.prefix]) {
+                        visitor.options[result.prefix] = {};
+                    }
+                }
             }
     
             if (match) {
