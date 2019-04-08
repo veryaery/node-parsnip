@@ -46,10 +46,7 @@ export class StringType implements Type {
             throw new Fault({ max: this.options.max }, properties => `Must be a maximum of ${properties.max} characters long`, result.excess_from, input.length - result.remaining.length);
         }
 
-        return {
-            output: result.output,
-            remaining: result.remaining
-        };
+        return result;
     }
 
     private parse_string(input: string, options: DefaultedOptions): ParseStringReturnObject {
