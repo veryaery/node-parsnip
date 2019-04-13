@@ -38,7 +38,13 @@ export class StringType implements Type {
     }
 
     parse(input: string, options: DefaultedOptions): TypeReturnObject {
-        const result: ParseStringReturnObject = this.parse_string(input, options);
+        let result: ParseStringReturnObject;
+
+        try {
+            result = this.parse_string(input, options);
+        } catch (error) {
+            throw error;
+        }
 
         if (this.options.min && result.output.length < this.options.min) {
             throw new Fault({ min: this.options.min }, properties => `Must be a minimum of ${properties.min} characters long`, 0, input.length - result.remaining.length);
