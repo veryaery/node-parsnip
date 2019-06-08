@@ -61,6 +61,7 @@ export class ListType implements Type {
         const output: any[] = [];
 
         let remaining: string = input;
+        let separator: string = null;
         let last_remaining_length: number = remaining.length;
         let excess_from: number = null;
         
@@ -76,7 +77,7 @@ export class ListType implements Type {
             }
 
             try {
-                result = this.type.parse(remaining, { ...options, separator: [ ...options.separator, ...this.options.list_separator ] });
+                result = this.type.parse(remaining, { ...options, separator: [ ...options.separator, ...( separator ? [ separator ] : this.options.list_separator) ] });
             } catch (error) {
                 throw error;
             }
@@ -88,9 +89,13 @@ export class ListType implements Type {
             output.push(result.output);
             remaining = result.remaining;
 
-            const starts_with: string = methods.starts_with(remaining, this.options.list_separator);
+            const starts_with: string = methods.starts_with(remaining, separator ? [ separator ] : this.options.list_separator);
 
-            if (starts_with) {
+            if (!separator) {
+                separator = starts_with;       
+            }
+
+            if (starts_with == separator) {
                 remaining = methods.trim_start(remaining.slice(starts_with.length, remaining.length), options.separator);
             } else {
                 break;
